@@ -1,0 +1,9 @@
+*.md
+!readme.md
+!documentation/*.md
+
+node_modules/
+dist/
+.vscode/
+package-lock.json
+
