@@ -1,7 +1,8 @@
 import { UnitComponent } from "../component/unit-component";
-import { User, Role } from "./user-type";
+import { User } from "./user";
 import { UserConf } from "../bot-system-type";
 import { MapNameId } from "../../tools/collection/map";
+import { Role } from "./role";
 
 export class UserManager extends UnitComponent {
     private conf: UserConf

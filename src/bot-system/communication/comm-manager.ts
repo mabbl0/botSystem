@@ -2,12 +2,15 @@ import { UnitComponent } from '../component/unit-component';
 import type { CommunicationConf } from '../bot-system-type';
 import { MapId, MapName } from '../../tools/collection/map';
 import { MessageComponent } from './message-component/message-component';
-import { MsgComponentAdapterApi, MsgComponentDisplayType, MsgComponentInteractive } from './message-component/message-component-type';
-import { Message, MessageApi, MessageCore, MessageFunctionCore } from './message';
+import { MsgComponentAdapterApi, MsgComponentInteractive } from './message-component/message-component-type';
+import { Message, MessageCore } from './message';
 import { Channel, ChannelCore } from './channel';
-import { CommReturn, MsgToSend, thenLogError } from './comm-type';
+import { CommReturn, CommunicationAction, CommunicationFunction, MsgToSend, thenLogError } from './comm-type';
 import { Interaction } from './interaction';
+import { Modal, ModalBase } from './message-component/modal';
 
+
+// TODO: remove / destroy the unsed message component
 
 export class CommManager extends UnitComponent {
     private commConf: CommunicationConf
@@ -15,15 +18,14 @@ export class CommManager extends UnitComponent {
     private channels: MapName<ChannelCore>
     private generalChannel: Channel
     private botChannel: Channel
-    private msgFct: MessageFunctionCore
 
-    private _adaptMsgContentFromApi: (msg: MessageCore, msgApi: MessageApi) => void
-    private _postMsg: (messageApi: MessageApi, msg: MsgToSend) => void
-    private _newMessageComponentAdapter: new () => MsgComponentAdapterApi
-
+    private _commFunction: CommunicationFunction
+    private _commActionApi: <PromiseReplyType>(action: CommunicationAction, msgToSend: MsgToSend, apiObject: any, withReturn: boolean) => CommReturn<PromiseReplyType>
+    
     /** Msg Component **/
     private msgcCounter: number
     private msgComponentInteractions: MapId<MsgComponentInteractive>
+    private _newMessageComponentAdapter: new () => MsgComponentAdapterApi
 
     constructor(commConf: CommunicationConf) {
         super("CommManager", "Manage Communication (message, channel, button, ..)");
@@ -41,7 +43,7 @@ export class CommManager extends UnitComponent {
 
         /** Declare Methods for CommInterface **/
         this.mthInterface.addMethod("createMessageComponent", this.createMessageComponent.bind(this));
-
+        this.mthInterface.addMethod("createModal", this.createModal.bind(this));
 
         /** Text Command **/
         if (this.commConf.noButton) {
@@ -50,8 +52,8 @@ export class CommManager extends UnitComponent {
     }
 
     // Initiate the channels
-    initChannels(channels: MapName<ChannelCore>, msgFct: MessageFunctionCore) {
-        this.msgFct = msgFct;
+    initChannels(channels: MapName<ChannelCore>, commFunction: CommunicationFunction) {
+        this._commFunction = commFunction;
         if (this.channels == undefined) {
             this.channels = channels;
 
@@ -66,7 +68,7 @@ export class CommManager extends UnitComponent {
             }
 
             this.channels.forEach(channel => {
-                channel.msgFct = this.msgFct;
+                channel.commFunction = this._commFunction;
             });
             this.logInfo(`${channels.size} Channels initiate`);
         }
@@ -78,38 +80,35 @@ export class CommManager extends UnitComponent {
             // check if it is not already added to the list by the interfaceApi
             if (!this.channels.has(newChannel.name)) {
                 this.channels.set(newChannel);
-                newChannel.msgFct = this.msgFct;
+                newChannel.commFunction = this._commFunction;
             }
         }
     }
 
-    set adaptMsgContentFromApi(fct: (msg: MessageCore, msgApi: MessageApi) => void) {
-        if(this._adaptMsgContentFromApi == undefined) { // only once
-            this._adaptMsgContentFromApi = fct;
+    setCommActionApi(fct: <PromiseReplyType>(action: CommunicationAction, msgToSend: MsgToSend, apiObject: any, withReturn: boolean) => CommReturn<PromiseReplyType>) {
+        if(this._commActionApi == undefined) { // only once
+            this._commActionApi = fct;
         }
     }
-    set newMessageComponentAdapter(construct: new () => MsgComponentAdapterApi) {
+    set newMessageComponentAdapter(fct: new () => MsgComponentAdapterApi ) {
         if(this._newMessageComponentAdapter == undefined) { // only once
-            this._newMessageComponentAdapter = construct;
+            this._newMessageComponentAdapter = fct;
         }
     }
-    set postMsgApi(fct: (messageApi: MessageApi, msg: MsgToSend) => void) {
-        if(this._postMsg == undefined) { // only once
-            this._postMsg = fct;
+    set commFunction(commFunction: CommunicationFunction) {
+        if(this._commFunction == undefined) { // only once
+            this._commFunction = commFunction;
         }
     }
-
-    // Adapt the message content from a api message
-    adaptMessageContent(msg: MessageCore, msgApi: MessageApi) {
-        if(this._adaptMsgContentFromApi != undefined) {
-            return this._adaptMsgContentFromApi(msg, msgApi);
-        }
+    get commFunction() {
+        return this._commFunction;
     }
 
-    postMsg(messageApi: MessageApi, msg: MsgToSend) {
-        if(this._postMsg != undefined) {
-            this._postMsg(messageApi, msg);
+    commActionApi<PromiseReplyType>(action: CommunicationAction, msgToSend: MsgToSend, apiObject: any, withReturn: boolean): CommReturn<PromiseReplyType> {
+        if(this._commActionApi != undefined) {
+            return this._commActionApi<PromiseReplyType>(action, msgToSend, apiObject, withReturn);
         }
+        return thenLogError;
     }
 
     /*** Methods ***/
@@ -216,16 +215,33 @@ export class CommManager extends UnitComponent {
      * @param componentName component name which ask the message component
      * @returns the message component to add text, buttons, ..
      */
-    createMessageComponent(componentName: string, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message): MessageComponent {
+    createMessageComponent(componentName: string): MessageComponent {
         let msgcId = 'msgc' + this.msgcCounter + '_';
         this.msgcCounter += 1;
         let newMsgComponent = new MessageComponent(msgcId,
             this.addMsgComponentInteraction.bind(this),
             this.removeMsgComponentInteraction.bind(this),
-            this._newMessageComponentAdapter,
-            displayType
+            this._newMessageComponentAdapter
         );
         this.logInfo(`${componentName} Component get the message component '${msgcId}'`);
+        return newMsgComponent;
+    }
+
+    /**
+     * Create and return a message component to add text, buttons, .. to a message
+     * @param componentName component name which ask the message component
+     * @returns the message component to add text, buttons, ..
+     */
+    createModal(componentName: string, modal: ModalBase): Modal {
+        let msgcId = 'modal' + this.msgcCounter + '_';
+        this.msgcCounter += 1;
+        let newMsgComponent = new Modal(msgcId,
+            modal,
+            this.addMsgComponentInteraction.bind(this),
+            this.removeMsgComponentInteraction.bind(this),
+            this._newMessageComponentAdapter
+        );
+        this.logInfo(`${componentName} Component get the modal '${msgcId}'`);
         return newMsgComponent;
     }
 

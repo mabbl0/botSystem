@@ -1,4 +1,4 @@
-import { User } from "../user/user-type"
+import { User } from "../user/user"
 import { MethodInterface } from "../method/method-interface"
 import { MsgToSend } from "../communication/comm-type"
 import { WakeupDateEvent, WakeupDateOption } from "./wakeup-date-event"

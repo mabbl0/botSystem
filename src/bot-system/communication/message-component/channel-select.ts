@@ -1,44 +1,44 @@
 import { Interaction } from "../interaction";
 import { MessageComponentBase, MsgComponentDisplayType, MsgComponentInteractive, MsgComponentInteractiveOption, MsgComponentType } from "./message-component-type";
 
-interface MentionSelectOption extends MsgComponentInteractiveOption {
+interface ChannelSelectOption extends MsgComponentInteractiveOption {
     disable?: boolean
     placeholder?: string
     minChoice?: number
     maxChoice?: number
 }
 
-export interface MentionSelectBase {
-    option?: MentionSelectOption
+export interface ChannelSelectBase {
+    option?: ChannelSelectOption
     id?: string
-    interactionFct?: (interaction: Interaction, mentionSelect: MentionableSelect) => void
+    interactionFct?: (interaction: Interaction, channelSelect: ChannelSelect) => void
 }
 
-export class MentionableSelect extends MessageComponentBase implements MsgComponentInteractive {
+export class ChannelSelect extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
-    interactionFct: (interaction: Interaction, mentionSelect: MentionableSelect) => void
-    private _option: MentionSelectOption
+    interactionFct: (interaction: Interaction, channelSelect: ChannelSelect) => void
+    private _option: ChannelSelectOption
 
     
-    constructor(msgcOwner: MessageComponentBase, mentionSelect?: MentionSelectBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
-        super(msgcOwner, displayType, MsgComponentType.MentionableSelect);
+    constructor(msgcOwner: MessageComponentBase, channelSelect?: ChannelSelectBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
+        super(msgcOwner, displayType, MsgComponentType.ChannelSelect);
 
-        this.interactionFct = mentionSelect?.interactionFct;
+        this.interactionFct = channelSelect?.interactionFct;
         
-        if(mentionSelect?.id != undefined) {
-            this.id = mentionSelect?.id;
+        if(channelSelect?.id != undefined) {
+            this.id = channelSelect?.id;
         }
         else {
             if(this.msgcOwner.getUniqueId != undefined) {
                 this.id = this.msgcOwner.getUniqueId();
             }
             else {
-                this.id = 'mentionSelect';
+                this.id = 'channelSelect';
             }
         }
 
         // setup option
-        if (mentionSelect?.option == undefined) {
+        if (channelSelect?.option == undefined) {
             this._option = {
                 placeholder: undefined,
                 minChoice: 1,
@@ -48,7 +48,7 @@ export class MentionableSelect extends MessageComponentBase implements MsgCompon
             }
         }
         else {
-            this._option = mentionSelect?.option;
+            this._option = channelSelect?.option;
             if (this._option.minChoice == undefined) {
                 this._option.minChoice = 1;
             }

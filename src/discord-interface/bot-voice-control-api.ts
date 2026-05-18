@@ -1,6 +1,7 @@
 import { VoiceConnection, AudioPlayer, AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, 
     createAudioResource, AudioPlayerState, VoiceConnectionState,
     VoiceConnectionStatus} from '@discordjs/voice'
+import Discord from "discord.js"
 
 import { createReadStream } from 'fs'
 import { PlayAudioOption, VoiceChannel } from "../bot-system/communication/voice/voice-type";
@@ -63,7 +64,7 @@ export class BotVoiceControlDiscord implements BotVoiceControlAPI {
      */
     botVoiceConnection(channel: VoiceChannel) {
         this.currentConnection = joinVoiceChannel({
-            channelId: (channel.voiceChannelApi as any).id,
+            channelId: ((channel as any).voiceChannelApi as Discord.VoiceChannel).id,
             guildId: this.discordApi.guild.id,
             adapterCreator: this.discordApi.guild.voiceAdapterCreator
         });

@@ -1,13 +1,14 @@
 import Stream from "stream"
-import { Role, User, UserApi } from "../user/user-type"
+import { User } from "../user/user"
 import { MessageComponent } from "./message-component/message-component"
-import { Channel, ChannelApi } from "./channel"
+import { Channel } from "./channel"
+import { Role } from "../user/role"
 
 
 interface ThenFct {
     then: () => void
 }
-export const thenLogError: ThenFct = {then: ()=>console.error('no promise activate')};
+export const thenLogError: ThenFct = {then: ()=>console.error('no promise activated')};
 export type CommReturn<CommType> = Promise<CommType> | ThenFct;
 export function commReturnError<CommType>(getCommReturn?: boolean): CommReturn<CommType> {
     if(getCommReturn) {
@@ -28,34 +29,29 @@ export interface MsgToSend {
     components?: MessageComponent
 }
 
-
-export interface CommunicationBaseApi<PromiseReplyType extends CommunicationBaseApi<PromiseReplyType>> {
-    author: UserApi
-    channel: ChannelApi
-    reply(msg: string | MsgToSend | MessageComponent): Promise<PromiseReplyType>
-    edit(msg: string | MsgToSend | MessageComponent): Promise<PromiseReplyType>
-}
-
 export interface CommunicationBase<PromiseReplyType> {
     author: User
     channel: Channel
     date: number // in ms since 1970
 
-    reply(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<PromiseReplyType>
-    edit(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<PromiseReplyType>
-    getCopy(): CommunicationBase<PromiseReplyType>
+    reply(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<PromiseReplyType>
+    edit(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<PromiseReplyType>
+
+    commFunction: CommunicationFunction
 }
 
 
 
 export const enum CommunicationAction {
     ChannelSend,
+
     MessageReply,
     MessageEdit,
+    MessageDelete,
+
     InteractionReply,
     InteractionEdit,
-    InteractionModal
-
+    InteractionDefer
 }
 
 export interface CommunicationFunction {
@@ -65,5 +61,5 @@ export interface CommunicationFunction {
     getMentionedRoleStr: (str: string) => Role[] // get the mentioned role from a string
     getAllMentionedUserStr: (str: string) => User[] // get all the mentioned user from a string, even the user mentioned by a role
 
-    apiAction: (action: CommunicationAction, apiObject: any, msgToSend: MsgToSend) => void
+    commActionApi: <PromiseReplyType>(action: CommunicationAction, msgToSend: MsgToSend, apiObject: any, withReturn: boolean) => CommReturn<PromiseReplyType>
 }

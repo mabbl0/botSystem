@@ -1,19 +1,21 @@
-import { User, Role } from "../user/user-type";
+import { User } from "../user/user";
 import { MapName, MapNameId } from "../../tools/collection/map";
 import { Recycler } from "../../tools/collection/recycler";
 import { SlashCmd } from "../communication/command/command-type";
-import { MsgToSend } from "../communication/comm-type";
+import { CommReturn, CommunicationAction, MsgToSend } from "../communication/comm-type";
 import { PlayAudioOption, VoiceChannel } from "../communication/voice/voice-type";
-import { MessageApi, MessageCore, MessageRecycled } from "../communication/message";
+import { MessageRecycled } from "../communication/message";
 import { InteractionRecycled } from "../communication/interaction";
 import { Channel, ChannelCore } from "../communication/channel";
 import { MsgComponentAdapterApi } from "../communication/message-component/message-component-type";
+import { Role } from "../user/role";
 
 
 /*** Interface for the interface Api Class ***/
 
 export interface InterfaceAPI {
     event: EventAPI
+    adaptComm: AdaptCommAPI
     chat: ChatAPI
     command: CommandAPI
     mentioned: MentionedAPI
@@ -26,8 +28,6 @@ export interface InterfaceAPI {
 }
 
 export interface EventAPI {
-    controlBeforeSent(msg: MsgToSend): boolean;
-
     /*** Method to Initiate Events ***/
     initBootEvent( bootFct: () => void ): void
     initMessageCreationEvent( messageRecycler: Recycler<MessageRecycled>, msgCreationFct: (message: MessageRecycled) => void ): void
@@ -35,12 +35,11 @@ export interface EventAPI {
     initUserAddEvent(userAddFct: (user: User) => void): void
     initChannelCreateEvent(channelCreateFct: (channel: Channel) => void): void
     initVoiceUpdateEvent(userVoiceConnexionFct: (user: User) => void): void
+}
 
-    /*** Adapt Method ***/
-    adaptMessageContent(msg: MessageCore, msgApi: MessageApi): void
+export interface AdaptCommAPI {
+    commActionApi<PromiseReplyType>(action: CommunicationAction, msgToSend: MsgToSend, apiObject: any, withReturn: boolean): CommReturn<PromiseReplyType>
     getMessageComponentAdapterConstructor(): new () => MsgComponentAdapterApi
-
-    postMsg(messageApi: MessageApi, msg: MsgToSend): void
 }
 
 export interface ChatAPI {

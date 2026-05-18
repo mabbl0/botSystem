@@ -1,4 +1,4 @@
-import { User } from "../../user/user-type"
+import { User } from "../../user/user"
 import { Interaction, InteractionArgument } from "../interaction"
 import { Message } from "../message"
 

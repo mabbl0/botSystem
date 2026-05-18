@@ -1,6 +1,6 @@
 import Discord from "discord.js"
 
-import type { InterfaceAPI } from '../bot-system/interface-api/interface-api-type'
+import type { AdaptCommAPI, InterfaceAPI } from '../bot-system/interface-api/interface-api-type'
 import type { DiscordInterfaceConf } from './util/discord-interface-type'
 import { loadData } from "../tools/file"
 
@@ -9,6 +9,7 @@ import { ChatDiscord } from "./chat-api"
 import { CommandDiscord } from "./command-api"
 import { MentionedDiscord } from "./mentioned-api"
 import { BotVoiceControlDiscord } from "./bot-voice-control-api"
+import { AdaptCommDiscord } from "./adapt-comm-api"
 
 
 export class DiscordInterface implements InterfaceAPI {
@@ -19,6 +20,7 @@ export class DiscordInterface implements InterfaceAPI {
     log: (logLevel: number, txt: string) => void
 
     event: EventDiscord
+    adaptComm: AdaptCommAPI
     chat: ChatDiscord
     command: CommandDiscord
     mentioned: MentionedDiscord
@@ -31,6 +33,7 @@ export class DiscordInterface implements InterfaceAPI {
         this.log = (_logLevel: number, txt: string) => { console.log(txt); };
         
         this.event = new EventDiscord(this);
+        this.adaptComm = new AdaptCommDiscord(this);
         this.chat = new ChatDiscord(this);
         this.command = new CommandDiscord(this);
         this.mentioned = new MentionedDiscord();

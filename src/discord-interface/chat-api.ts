@@ -1,10 +1,11 @@
 import Discord from "discord.js";
 import { ChatAPI } from "../bot-system/interface-api/interface-api-type";
 import { MapName, MapNameId } from "../tools/collection/map";
-import { Role, User, UserApi } from "../bot-system/user/user-type";
+import { User } from "../bot-system/user/user";
 import { DiscordInterface } from "./discord-interface-api";
 import { VoiceChannel } from "../bot-system/communication/voice/voice-type";
 import { ChannelCore } from "../bot-system/communication/channel";
+import { Role } from "../bot-system/user/role";
 
 export class ChatDiscord implements ChatAPI {
     private discordApi: DiscordInterface
@@ -24,7 +25,7 @@ export class ChatDiscord implements ChatAPI {
         if (this.discordApi.guild) {
             this.discordApi.guild.channels.cache.forEach(channelApi => {
                 if (channelApi.type == Discord.ChannelType.GuildText) {
-                    this.channels.set(new ChannelCore(channelApi as any));
+                    this.channels.set(new ChannelCore(channelApi, channelApi.name, channelApi.toString()));
                 }
             });
         }
@@ -42,7 +43,7 @@ export class ChatDiscord implements ChatAPI {
             this.discordApi.guild.channels.cache.forEach(channelApi => {
                 if (channelApi.type == Discord.ChannelType.GuildVoice) {
                     (channelApi as any).usersApi = function (){return this.members};
-                    this.voiceChannels.set(new VoiceChannel(channelApi as any, this.usersApiToUsers.bind(this)));
+                    this.voiceChannels.set(new VoiceChannel(channelApi, channelApi.name, channelApi.toString(), this.getVoiceChannelUsers.bind(this)));
                 }
             });
         }
@@ -53,11 +54,11 @@ export class ChatDiscord implements ChatAPI {
     }
 
     // return a user list from a user api list
-    usersApiToUsers(usersApiList: Array<UserApi>): Array<User> {
+    getVoiceChannelUsers(voiceChannelApi: Discord.VoiceChannel): Array<User> {
         let users: Array<User> = [];
         if(this.users!=undefined) {
             let user: User;
-            usersApiList.forEach( userApi => {
+            voiceChannelApi.members.forEach( userApi => {
                 user = this.users.get(userApi.id);
                 if(user!=undefined) {
                     users.push(user);
@@ -74,9 +75,24 @@ export class ChatDiscord implements ChatAPI {
         if (this.discordApi.guild) {
             this.discordApi.guild.members.cache.forEach(memberApi => {
                 // change discord member to botSystem user
-                let user = new User(memberApi.user, 
-                    memberApi.roles as any, 
-                    memberApi.voice as any,
+                let user = new User(memberApi.id,
+                    memberApi.user.bot,
+                    memberApi.user.username,
+                    memberApi.toString(),
+                    memberApi.roles,
+                    {
+                        addRole: this.addRole,
+                        removeRole: this.removeRole
+                    },
+                    memberApi.voice,
+                    {
+                        isDeaf: this.isDeaf,
+                        isMute: this.isMute,
+                        setDeaf: this.setDeaf,
+                        setMute: this.setMute,
+                        disconnect: this.disconnet,
+                        moveVoiceChannel: this.moveVoiceChannel as any
+                    },
                     memberApi.voice.channel != undefined ? this.voiceChannels.get(memberApi.voice.channel?.name) : undefined);
                 this.users.set(user);
             });
@@ -117,4 +133,52 @@ export class ChatDiscord implements ChatAPI {
         return this.roles;
     }
 
+    
+    /* UserRoleControlApiFunction */
+    
+    /**
+     * add a role to a discord role manager
+     * @param roleApi role manager from discord
+     * @param role role to add
+     */
+    addRole(roleApi: Discord.GuildMemberRoleManager, role: Role) {
+        roleApi.add(role as any);
+    }
+    
+    /**
+     * remove a role to a discord role manager
+     * @param roleApi role manager from discord
+     * @param role role to remove
+     */
+    removeRole(roleApi: Discord.GuildMemberRoleManager, role: Role) {
+        roleApi.remove(role as any);
+    }
+    
+    
+    /* UserVoiceControlApiFunction */
+    
+    isDeaf(userVoiceControlApi: Discord.VoiceState): boolean {
+        return userVoiceControlApi.deaf;
+    }
+    
+    isMute(userVoiceControlApi: Discord.VoiceState): boolean {
+        return userVoiceControlApi.mute;
+    }
+    
+    setDeaf(userVoiceControlApi: Discord.VoiceState, deaf: boolean) {
+        userVoiceControlApi.setDeaf(deaf);
+    }
+    
+    setMute(userVoiceControlApi: Discord.VoiceState, mute: boolean) {
+        userVoiceControlApi.setMute(mute);
+    }
+    
+    disconnet(userVoiceControlApi: Discord.VoiceState) {
+        userVoiceControlApi.disconnect();
+    }
+    
+    moveVoiceChannel(userVoiceControlApi: Discord.VoiceState, voiceChannel: {voiceChannelApi: Discord.VoiceChannel}) {
+        userVoiceControlApi.setChannel(voiceChannel.voiceChannelApi);
+    }
 }
+

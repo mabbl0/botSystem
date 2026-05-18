@@ -15,10 +15,10 @@ import { MethodManager } from "./method/method-manager";
 
 import type { InterfaceAPI } from './interface-api/interface-api-type'
 import { Prop } from './property/property-type'
-import { User } from "./user/user-type";
+import { User } from "./user/user";
 import { Recycler } from "../tools/collection/recycler";
 import { VoiceManager } from "./communication/voice/voice-manager";
-import { Message, MessageCore, MessageFunctionCore, MessageRecycled } from "./communication/message";
+import { Message, MessageRecycled } from "./communication/message";
 import { InteractionType, InteractionRecycled } from "./communication/interaction";
 import { ChannelCore } from "./communication/channel";
 
@@ -44,8 +44,6 @@ export class BotSystem extends Unit {
     private userManager: UserManager
     private eventManager: EventManager
     private voiceManager: VoiceManager
-
-    private msgFct: MessageFunctionCore
 
     // Create and Initiate the Bot System
     constructor(bsConfPath: string) {
@@ -113,24 +111,20 @@ export class BotSystem extends Unit {
         this.interfaceApiManager.fctUserVoiceConnection = this.userVoiceConnectionEvent.bind(this);
         
         // Init recycler with event call 
-        this.msgFct = {
+        this.commManager.commFunction = {
             beforeSentFct: this.eventManager.callBeforeSent.bind(this.eventManager),
 
             getMentionedUserStr: this.userManager.getMentionedUser.bind(this.userManager),
             getMentionedRoleStr: this.userManager.getMentionedRole.bind(this.userManager),
             getAllMentionedUserStr: this.userManager.getAllMentionedUser.bind(this.userManager),
 
-            adaptNewMessageContent: this.commManager.adaptMessageContent.bind(this.commManager),
-
-            postMsg: this.commManager.postMsg.bind(this.commManager),
-
-            messageConstructor: MessageCore
+            commActionApi: this.commManager.commActionApi.bind(this.commManager)
         }
         this.interfaceApiManager.msgRecycler.initItems( (msg: MessageRecycled) => {
-            msg.msgFct = this.msgFct;
+            msg.commFunction = this.commManager.commFunction;
         });
         this.interfaceApiManager.interactRecycler.initItems( (interact: InteractionRecycled) => {
-            interact.msgFct = this.msgFct;
+            interact.commFunction = this.commManager.commFunction;
         });
         
         this.logInfo("****** Start BotSystem Initialization ******");
@@ -169,12 +163,11 @@ export class BotSystem extends Unit {
     addInterfaceAPI(interfaceAPI: InterfaceAPI) {
         this.interfaceApiManager.addInterfaceAPI(interfaceAPI);
         this.cmdManager.botApiCmdUpdate = interfaceAPI.command.updateBotCommands.bind(interfaceAPI.command);
-        this.eventManager.controlBeforeSentFct = interfaceAPI.event.controlBeforeSent.bind(interfaceAPI.event);
         this.userManager.getMentionedUserApi = interfaceAPI.mentioned.getMentionedUser.bind(interfaceAPI.mentioned);
         this.userManager.getMentionedRoleApi = interfaceAPI.mentioned.getMentionedRole.bind(interfaceAPI.mentioned);
-        this.commManager.adaptMsgContentFromApi = interfaceAPI.event.adaptMessageContent.bind(interfaceAPI.event);
-        this.commManager.postMsgApi = interfaceAPI.event.postMsg.bind(interfaceAPI.event);
-        this.commManager.newMessageComponentAdapter = interfaceAPI.event.getMessageComponentAdapterConstructor();
+        
+        this.commManager.setCommActionApi( interfaceAPI.adaptComm.commActionApi.bind(interfaceAPI.adaptComm) );
+        this.commManager.newMessageComponentAdapter = interfaceAPI.adaptComm.getMessageComponentAdapterConstructor();
         this.voiceManager.botVoiceControlApi = interfaceAPI.voiceControl;
     }
 
@@ -186,7 +179,7 @@ export class BotSystem extends Unit {
     // Initiate Communication after bot connection
     private bootEvent() {
         this.interfaceApiManager.interfaceApi.command.initCmdMap( this.cmdManager.cmdMap );
-        this.commManager.initChannels(this.interfaceApiManager.interfaceApi.chat.getChannels(), this.msgFct );
+        this.commManager.initChannels(this.interfaceApiManager.interfaceApi.chat.getChannels(), this.commManager.commFunction );
         this.voiceManager.initVoiceChannels(this.interfaceApiManager.interfaceApi.chat.getVoiceChannels() );
         this.userManager.initUsers(this.interfaceApiManager.interfaceApi.chat.getUsers());
         this.userManager.initRoles(this.interfaceApiManager.interfaceApi.chat.getRoles());
@@ -271,6 +264,7 @@ export class BotSystem extends Unit {
                 case InteractionType.ContextMenuMessage:
                     break;
                 case InteractionType.MessageComponentInteraction:
+                case InteractionType.ModalSubmit:
                     this.commManager.messageComponentInteraction(interaction);
                     break;
                 default:

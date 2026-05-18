@@ -2,9 +2,6 @@ import Discord from "discord.js";
 import { DiscordCmd, DiscordCmdOption } from "./discord-interface-type";
 import { SlashCmd } from "../../bot-system/communication/command/command-type";
 import { InteractionArgument, InteractionArgumentType, InteractionType } from "../../bot-system/communication/interaction";
-import { MsgToSend } from "../../bot-system/communication/comm-type";
-import { MsgComponentAdapter } from "./message-component-adapter";
-import { MsgComponentDisplayType } from "../../bot-system/communication/message-component/message-component-type";
 
 // Convert the Interaction Type
 export class ConvertCommandInteractionType {
@@ -166,52 +163,4 @@ export class DiscordCmdAdapt {
         }
         return str;
     }
-}
-
-
-/**
- * finish to Adapt the message component message to discord Api 
- * @param msg the message to adapt
- */
-export function adaptMessageComponent(msg: MsgToSend) {
-    msg.components.prepareToSend();
-    if(msg.components.displayType == MsgComponentDisplayType.Message)
-    {
-        (msg as any).flags += Discord.MessageFlags.IsComponentsV2;
-        msg.components = (msg.components.adapter as MsgComponentAdapter).msgcAdapted as any;
-        
-        // no content if flags componentV2
-        if (msg.content != undefined) {
-            (msg.components as any).splice(0, 0, {
-                type: Discord.ComponentType.TextDisplay as number,
-                content: msg.content
-            });
-            msg.content = undefined;
-        }
-    }
-    else if(msg.components.displayType == MsgComponentDisplayType.Modal)
-    {
-
-        
-
-        // https://github.com/discordjs/discord.js/blob/main/packages/discord.js/src/structures/interfaces/InteractionResponses.js
-        //Discord.InteractionResponses
-        // (msg as any).type = Discord.InteractionResponseType.Modal //InteractionCallbackType.MODAL;
-        // (msg as any).data = {
-        //     custom_id: "jail_modal",
-        //     title: "jail",
-        //     components: (msg.components.adapter as MsgComponentAdapter).msgcAdapted
-        // }
-        // msg.components = undefined;
-        
-        // if (msg.content != undefined) {
-        //     (msg as any).data.components.splice(0, 0, {
-        //         type: Discord.ComponentType.TextDisplay as number,
-        //         content: msg.content
-        //     });
-        //     msg.content = undefined;
-        // }
-    }
-
-    console.log(msg);
 }

@@ -1,6 +1,6 @@
 import { UnitComponent } from "../component/unit-component";
 import { Event } from "./event";
-import { User } from "../user/user-type"
+import { User } from "../user/user"
 import { MsgToSend } from "../communication/comm-type";
 import { SaveInterface } from "../component/save-interface";
 import { WakeupDateJson, WakeupDateController } from "./wakeup-data-controller";
@@ -27,7 +27,6 @@ export class EventManager extends UnitComponent {
 
     // Event call before to send (reply) to a message
     private beforeSentEvent: Event<[msg: MsgToSend], boolean>
-    private _controlBeforeSentFct: (msg: MsgToSend) => boolean
 
     // every wake up date event, where sub are call to a specific date
     private wakeupDateController: WakeupDateController
@@ -79,17 +78,8 @@ export class EventManager extends UnitComponent {
 
     // Call before sent callback
     callBeforeSent(msg: MsgToSend): boolean {
-        let shouldBeSent = this.beforeSentEvent.callWithReturn(true, (r,n) => r && n, msg);
-        shouldBeSent = shouldBeSent && this._controlBeforeSentFct(msg);
-        return shouldBeSent;
+        return this.beforeSentEvent.callWithReturn(true, (r,n) => r && n, msg);
     }
-
-    set controlBeforeSentFct(fct: (msg: MsgToSend) => boolean){
-        if(this._controlBeforeSentFct == undefined){ // only once
-            this._controlBeforeSentFct = fct;
-        }
-    }
-
 
     /*** WakeUp Date Event ***/
 

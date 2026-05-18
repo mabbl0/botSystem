@@ -1,5 +1,5 @@
 import { InterfaceAPI } from "./interface-api-type";
-import { User } from "../user/user-type";
+import { User } from "../user/user";
 import { Recycler } from "../../tools/collection/recycler";
 import { UnitComponent } from "../component/unit-component";
 import { MessageRecycled } from "../communication/message";

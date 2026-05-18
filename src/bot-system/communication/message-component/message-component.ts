@@ -4,9 +4,11 @@ import { ButtonBase } from "./button";
 import { MessageComponentBase, MsgComponentAdapterApi, MsgComponentDisplayType, MsgComponentInteractive, MsgComponentType } from "./message-component-type";
 import { AccessoryButton } from "./accessory-button";
 import { Message } from "../message";
-import { MsgOption } from "../comm-type";
+import { CommunicationBase, MsgOption } from "../comm-type";
 import { StringSelect, StringSelectBase } from "./string-select";
 import { MentionableSelect, MentionSelectBase } from "./mentionable-select";
+import { InputText, InputTxtBase } from "./input-text";
+import { ChannelSelect, ChannelSelectBase } from "./channel-select";
 
 // TODO: update !click command
 
@@ -14,14 +16,14 @@ export class MessageComponent extends MessageComponentBase {
     msgComponents: MessageComponentBase[]
     readonly id: string
     private msgcCounter: number
-    private _msgSent: Message
+    private _commSent: CommunicationBase<Message>
     msgOption: MsgOption
     private addMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
     private removeMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
     private adapterConstruct: new () => MsgComponentAdapterApi
-
-    constructor(id: string, addMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, removeMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, adapterConstruct?: new () => MsgComponentAdapterApi, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
-        super(undefined, displayType, MsgComponentType.MessageComponent);
+    
+    constructor(id: string, addMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, removeMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, adapterConstruct?: new () => MsgComponentAdapterApi) {
+        super(undefined, MsgComponentDisplayType.Message, MsgComponentType.MessageComponent);
         this.msgComponents = [];
         this.id = id;
         this.msgcCounter = 0;
@@ -31,7 +33,7 @@ export class MessageComponent extends MessageComponentBase {
         if(this.adapterConstruct != undefined) {
             this.adapter = new this.adapterConstruct();
         }
-        this._msgSent = undefined;
+        this._commSent = undefined;
         this.msgOption = {};
         this.interactiveComponents = [];
     }
@@ -41,8 +43,8 @@ export class MessageComponent extends MessageComponentBase {
      * @param notDeleteMsg indicate to not delete the message
      */
     override destroy(notDeleteMsg?: boolean) {
-        if(this._msgSent && !notDeleteMsg) {
-            this._msgSent.delete();
+        if(this._commSent && !notDeleteMsg && (this._commSent as Message).delete != undefined) {
+            (this._commSent as Message).delete();
         }
         // remove the msg component with interaction from the manager
         if(this.removeMsgComponentInteraction) {
@@ -58,13 +60,13 @@ export class MessageComponent extends MessageComponentBase {
     }
 
 
-    set msgSent(msgSent: Message) {
-        if(this._msgSent==undefined) { // only once
-            this._msgSent = msgSent;
+    set commSent(commSent: CommunicationBase<Message>) {
+        if(this._commSent==undefined) { // only once
+            this._commSent = commSent;
         }
     }
-    get needMsg(): boolean {
-        return this._msgSent == undefined;
+    get needComm(): boolean {
+        return this._commSent == undefined;
     }
 
     /**
@@ -146,13 +148,31 @@ export class MessageComponent extends MessageComponentBase {
     }
 
     /**
+     * add a mentionable select to the message component
+     * @param channelSelect option, interaction to add
+     * @returns the new mentionable select created
+     */
+    addChannelSelect(channelSelect?: ChannelSelectBase): ChannelSelect {
+        return this.addNewInteractiveMessageComponent(new ChannelSelect(this, channelSelect, this.displayType));
+    }
+
+    /**
+     * add a input text to the message component
+     * @param inputText option, interaction to add
+     * @returns the new input text created
+     */
+    addInputText(inputText?: InputTxtBase): InputText {
+        return this.addNewInteractiveMessageComponent(new InputText(this, inputText, this.displayType));
+    }
+
+    /**
      * Update the message
      */
     override update() {
-        if(this._msgSent) {
+        if(this._commSent != undefined) {
             // adapt, if modified, the message component before to edit
             this.adapter?.adapt(this); 
-            this._msgSent.edit(this);
+            this._commSent.edit(this);
         }
     }
 

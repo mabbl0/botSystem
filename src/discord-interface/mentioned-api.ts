@@ -1,6 +1,7 @@
 import { ChannelCore } from "../bot-system/communication/channel";
 import { MentionedAPI } from "../bot-system/interface-api/interface-api-type";
-import { Role, User } from "../bot-system/user/user-type";
+import { Role } from "../bot-system/user/role";
+import { User } from "../bot-system/user/user";
 import { MapName, MapNameId } from "../tools/collection/map";
 
 

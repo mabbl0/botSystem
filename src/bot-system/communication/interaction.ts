@@ -1,8 +1,8 @@
 import { RecycledItem } from "../../tools/collection/recycler";
-import { User } from "../user/user-type";
+import { User } from "../user/user";
 import { Channel } from "./channel";
-import { CommReturn, commReturnError, CommunicationBase, CommunicationBaseApi, MsgToSend, thenLogError } from "./comm-type";
-import { Message, MessageApi, MessageFunctionCore } from "./message";
+import { CommReturn, commReturnError, CommunicationAction, CommunicationBase, CommunicationFunction, MsgToSend, thenLogError } from "./comm-type";
+import { Message, MessageCore } from "./message";
 import { MessageComponent } from "./message-component/message-component";
 
 /*** Interaction Interface Data Description ***/
@@ -11,7 +11,8 @@ export const enum InteractionType {
     SlashCmd,
     ContextMenuUser,
     ContextMenuMessage,
-    MessageComponentInteraction
+    MessageComponentInteraction,
+    ModalSubmit
 }
 
 export const enum InteractionArgumentType {
@@ -63,10 +64,6 @@ export interface InteractionArgumentValue {
 
 /*** Interaface Bot System Use ***/
 
-export interface InteractionApi extends CommunicationBaseApi<MessageApi> {
-    deferAns(): void
-}
-
 export interface Interaction extends CommunicationBase<Message> {
     name: string
 
@@ -77,18 +74,17 @@ export interface Interaction extends CommunicationBase<Message> {
 }
 
 export class InteractionCore implements Interaction {
-    interactApi: InteractionApi
+    interactApi: any
     _author: User
     _channel: Channel
     _date: number // in ms since 1970
+
+    commFunction: CommunicationFunction
 
     type: InteractionType
     name: string
     arguments: Array<InteractionArgumentValue>
     choice: any
-    
-    msgFct: MessageFunctionCore // useful for the message (send, copy, ..)
-
 
     /*** Getter ***/
     get author() {
@@ -128,8 +124,8 @@ export class InteractionCore implements Interaction {
      * copy the function of a interaction 
      * @param interactToCopy interaction to copy
      */
-    copyFct(interactToCopy: {msgFct: MessageFunctionCore}) {
-        this.msgFct = interactToCopy.msgFct;
+    copyFct(interactToCopy: {commFunction: CommunicationFunction}) {
+        this.commFunction = interactToCopy.commFunction;
     }
 
 
@@ -191,17 +187,17 @@ export class InteractionCore implements Interaction {
 
     // defer the reply
     deferAns() {
-        this.interactApi.deferAns();
+        this.commFunction.commActionApi(CommunicationAction.InteractionDefer, undefined, this.interactApi, false);
     }
 
 
     /**
      * Reply to the interaction
      * @param msg message to send
-     * @param getMsgSent indicate to get a promise with the new message sent
+     * @param withReturn indicate to get a promise with the new message sent
      * @returns a promise resolve when the message is sent if askeed
      */
-    reply(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<Message> {
+    reply(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<Message> {
         // Adapt the message to the MsgToSend format
         let msgToSend: MsgToSend;
         let isMsgcNeededMsg = false;
@@ -209,9 +205,9 @@ export class InteractionCore implements Interaction {
             msgToSend = {content: msg as string};
         }
         else if((msg as MessageComponent).id != undefined) {
-            isMsgcNeededMsg = (msg as MessageComponent).needMsg;
             (msg as MessageComponent).adapt();
             msgToSend = {components: (msg as MessageComponent), option: (msg as MessageComponent).msgOption};
+            isMsgcNeededMsg = (msg as MessageComponent).needComm;
         }
         else {
             msgToSend = msg as MsgToSend;
@@ -219,30 +215,28 @@ export class InteractionCore implements Interaction {
 
         // test, control, and adapt the message content for the api
         let shouldBeSent = true;
-        if (this.msgFct.beforeSentFct != undefined) {
-            shouldBeSent = this.msgFct.beforeSentFct(msgToSend);
+        if (this.commFunction.beforeSentFct != undefined) {
+            shouldBeSent = this.commFunction.beforeSentFct(msgToSend);
         }
         if(shouldBeSent==false) {
-            return commReturnError(getMsgSent);
+            return commReturnError(withReturn);
         }
 
         // reply to the message with or without promise
-        if(getMsgSent || isMsgcNeededMsg) {
+        if(withReturn || isMsgcNeededMsg) {
             return new Promise<Message>( (resolveFct) => {
-                this.interactApi.reply(msgToSend).then( (msgApi) => {
-                    let newMsg = new this.msgFct.messageConstructor();
-                    newMsg.copyFct(this);
-                    this.msgFct.adaptNewMessageContent(newMsg, msgApi);
+                this.commFunction.commActionApi<MessageCore>(CommunicationAction.InteractionReply, msgToSend, this.interactApi, true).then( (newMsg) => {
                     newMsg.botAuthor = true;
+                    newMsg.copyFct(this);
                     if(isMsgcNeededMsg) {
-                        (msg as MessageComponent).msgSent = newMsg;
+                        msgToSend.components.commSent = newMsg;
                     }
                     resolveFct(newMsg);
                 });
             });
         }
         else {
-            this.interactApi.reply(msgToSend);
+            this.commFunction.commActionApi(CommunicationAction.InteractionReply, msgToSend, this.interactApi, false);
             return thenLogError;
         }
     }
@@ -250,13 +244,13 @@ export class InteractionCore implements Interaction {
     /**
      * Try to edit the message from the interaction
      * @param msg the new message
-     * @param getMsgSent indicate to receive a promise when the message is editing
+     * @param withReturn indicate to receive a promise when the message is editing
      * @returns a promise resolve when the message is sent if askeed
      */
-    edit(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<Message> {
+    edit(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<Message> {
         if(this.type != InteractionType.MessageComponentInteraction) {
             // the interaction should be from a message component (button, ..)
-            return commReturnError(getMsgSent);
+            return commReturnError(withReturn);
         }
         
         // Adapt the message to the MsgToSend format
@@ -266,8 +260,8 @@ export class InteractionCore implements Interaction {
             msgToSend = {content: msg as string};
         }
         else if((msg as MessageComponent).id != undefined) {
-            isMsgcNeededMsg = (msg as MessageComponent).needMsg;
             msgToSend = {components: (msg as MessageComponent), option: (msg as MessageComponent).msgOption};
+            isMsgcNeededMsg = (msg as MessageComponent).needComm;
         }
         else {
             msgToSend = msg as MsgToSend;
@@ -275,30 +269,28 @@ export class InteractionCore implements Interaction {
 
         // test, control, and adapt the message content for the api
         let shouldBeSent = true;
-        if(this.msgFct.beforeSentFct != undefined){
-            shouldBeSent = this.msgFct.beforeSentFct(msgToSend);
+        if(this.commFunction.beforeSentFct != undefined){
+            shouldBeSent = this.commFunction.beforeSentFct(msgToSend);
         }
         if(shouldBeSent==false) {
-            return commReturnError(getMsgSent);
+            return commReturnError(withReturn);
         }
 
         // edit the message with or without promise
-        if(getMsgSent || isMsgcNeededMsg) {
+        if(withReturn || isMsgcNeededMsg) {
             return new Promise<Message>( (resolveFct) => {
-                this.interactApi.edit(msgToSend).then( (msgApi) => {
-                    let newMsg = new this.msgFct.messageConstructor();
-                    newMsg.copyFct(this);
-                    this.msgFct.adaptNewMessageContent(newMsg, msgApi);
+                this.commFunction.commActionApi<MessageCore>(CommunicationAction.InteractionEdit, msgToSend, this.interactApi, true).then( (newMsg) => {
                     newMsg.botAuthor = true;
+                    newMsg.copyFct(this);
                     if(isMsgcNeededMsg) {
-                        (msg as MessageComponent).msgSent = newMsg;
+                        msgToSend.components.commSent = newMsg;
                     }
                     resolveFct(newMsg);
                 });
             });
         }
         else {
-            this.interactApi.edit(msgToSend);
+            this.commFunction.commActionApi(CommunicationAction.InteractionEdit, msgToSend, this.interactApi, false);
             return thenLogError;
         }
     }
@@ -330,80 +322,10 @@ export class InteractionRecycled extends InteractionCore implements RecycledItem
     /**
      * Reply to the interaction
      * @param msg message to send
-     * @param getMsgSent indicate to get a promise with the new message sent
+     * @param withReturn indicate to get a promise with the new message sent
      * @returns a promise resolve when the message is sent if askeed
      */
-    override reply(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<Message> {
-        // Adapt the message to the MsgToSend format
-        let msgToSend: MsgToSend;
-        //let isMsgcNeededMsg = false;
-        if((msg as string).trim != undefined){
-            msgToSend = {content: msg as string};
-        }
-        else if((msg as MessageComponent).id != undefined) {
-            //isMsgcNeededMsg = (msg as MessageComponent).needMsg;
-            (msg as MessageComponent).adapt();
-            msgToSend = {components: (msg as MessageComponent), option: (msg as MessageComponent).msgOption};
-        }
-        else {
-            msgToSend = msg as MsgToSend;
-        }
-
-        // test, control, and adapt the message content for the api
-        let shouldBeSent = true;
-        if (this.msgFct.beforeSentFct != undefined) {
-            shouldBeSent = this.msgFct.beforeSentFct(msgToSend);
-        }
-        if(shouldBeSent==false) {
-            return commReturnError(getMsgSent);
-        }
-
-
-        // TEST
-        this.msgFct.postMsg(this.interactApi as any ,msgToSend)
-
-
-        // // reply to the message with or without promise
-        // if(getMsgSent || isMsgcNeededMsg) {
-        //     this.waitReply += 1;
-        //     return new Promise<Message>( (resolveFct) => {
-        //         this.interactApi.reply(msgToSend).then( (msgApi) => {
-        //             let newMsg = new this.msgFct.messageConstructor();
-        //             newMsg.copyFct(this);
-        //             this.msgFct.adaptNewMessageContent(newMsg, msgApi);
-        //             newMsg.botAuthor = true;
-        //             if(isMsgcNeededMsg) {
-        //                 (msg as MessageComponent).msgSent = newMsg;
-        //             }
-        //             resolveFct(newMsg);
-
-        //             this.waitReply += -1;
-        //             if(this.readyToTrash){
-        //                 this.trash();                    
-        //             }
-                    
-        //         });
-        //     });
-        // }
-        // else {
-        //     this.interactApi.reply(msgToSend);
-        //     return thenLogError;
-        // }
-        return thenLogError;
-    }
-
-    /**
-     * Try to edit the message from the interaction
-     * @param msg the new message
-     * @param getMsgSent indicate to receive a promise when the message is editing
-     * @returns a promise resolve when the message is sent if askeed
-     */
-    override edit(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<Message> {
-        if(this.type != InteractionType.MessageComponentInteraction) {
-            // the interaction should be from a message component (button, ..)
-            return commReturnError(getMsgSent);
-        }
-
+    override reply(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<Message> {
         // Adapt the message to the MsgToSend format
         let msgToSend: MsgToSend;
         let isMsgcNeededMsg = false;
@@ -411,8 +333,9 @@ export class InteractionRecycled extends InteractionCore implements RecycledItem
             msgToSend = {content: msg as string};
         }
         else if((msg as MessageComponent).id != undefined) {
-            isMsgcNeededMsg = (msg as MessageComponent).needMsg;
+            (msg as MessageComponent).adapt();
             msgToSend = {components: (msg as MessageComponent), option: (msg as MessageComponent).msgOption};
+            isMsgcNeededMsg = (msg as MessageComponent).needComm;
         }
         else {
             msgToSend = msg as MsgToSend;
@@ -420,24 +343,83 @@ export class InteractionRecycled extends InteractionCore implements RecycledItem
 
         // test, control, and adapt the message content for the api
         let shouldBeSent = true;
-        if(this.msgFct.beforeSentFct != undefined){
-            shouldBeSent = this.msgFct.beforeSentFct(msgToSend);
+        if (this.commFunction.beforeSentFct != undefined) {
+            shouldBeSent = this.commFunction.beforeSentFct(msgToSend);
         }
         if(shouldBeSent==false) {
-            return commReturnError(getMsgSent);
+            return commReturnError(withReturn);
+        }
+
+        // reply to the message with or without promise
+        if(withReturn || isMsgcNeededMsg) {
+            this.waitReply += 1;
+            return new Promise<Message>( (resolveFct) => {
+                this.commFunction.commActionApi<MessageCore>(CommunicationAction.InteractionReply, msgToSend, this.interactApi, true).then( (newMsg) => {
+                    newMsg.botAuthor = true;
+                    newMsg.copyFct(this);
+                    if(isMsgcNeededMsg) {
+                        msgToSend.components.commSent = newMsg;
+                    }
+                    resolveFct(newMsg);
+
+                    this.waitReply += -1;
+                    if(this.readyToTrash){
+                        this.trash();                    
+                    }
+                    
+                });
+            });
+        }
+        else {
+            this.commFunction.commActionApi(CommunicationAction.InteractionReply, msgToSend, this.interactApi, false);
+            return thenLogError;
+        }
+    }
+
+    /**
+     * Try to edit the message from the interaction
+     * @param msg the new message
+     * @param withReturn indicate to receive a promise when the message is editing
+     * @returns a promise resolve when the message is sent if askeed
+     */
+    override edit(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<Message> {
+        if(this.type != InteractionType.MessageComponentInteraction) {
+            // the interaction should be from a message component (button, ..)
+            return commReturnError(withReturn);
+        }
+
+        // Adapt the message to the MsgToSend format
+        let isMsgcNeededMsg = false;
+        let msgToSend: MsgToSend;
+        if((msg as string).trim != undefined){
+            msgToSend = {content: msg as string};
+        }
+        else if((msg as MessageComponent).id != undefined) {
+            msgToSend = {components: (msg as MessageComponent), option: (msg as MessageComponent).msgOption};
+            isMsgcNeededMsg = (msg as MessageComponent).needComm;
+        }
+        else {
+            msgToSend = msg as MsgToSend;
+        }
+
+        // test, control, and adapt the message content for the api
+        let shouldBeSent = true;
+        if(this.commFunction.beforeSentFct != undefined){
+            shouldBeSent = this.commFunction.beforeSentFct(msgToSend);
+        }
+        if(shouldBeSent==false) {
+            return commReturnError(withReturn);
         }
 
         // edit the message with or without promise
-        if(getMsgSent || isMsgcNeededMsg) {
+        if(withReturn || isMsgcNeededMsg) {
             this.waitReply += 1;
             return new Promise<Message>( (resolveFct) => {
-                this.interactApi.edit(msgToSend).then( (msgApi) => {
-                    let newMsg = new this.msgFct.messageConstructor();
-                    newMsg.copyFct(this);
-                    this.msgFct.adaptNewMessageContent(newMsg, msgApi);
+                this.commFunction.commActionApi<MessageCore>(CommunicationAction.InteractionEdit, msgToSend, this.interactApi, true).then( (newMsg) => {
                     newMsg.botAuthor = true;
+                    newMsg.copyFct(this);
                     if(isMsgcNeededMsg) {
-                        (msg as MessageComponent).msgSent = newMsg;
+                        msgToSend.components.commSent = newMsg;
                     }
                     resolveFct(newMsg);
 
@@ -449,13 +431,13 @@ export class InteractionRecycled extends InteractionCore implements RecycledItem
             });
         }
         else {
-            this.interactApi.edit(msgToSend);
+            this.commFunction.commActionApi(CommunicationAction.InteractionEdit, msgToSend, this.interactApi, false);
             return thenLogError;
         }
     }
 
     // recycle the unused interaction to be re-used
-    recycle(interactApi: InteractionApi){
+    recycle(interactApi: any){
         if(!this.used){
             this.interactApi = interactApi;
             this.used = true;

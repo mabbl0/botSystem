@@ -3,7 +3,7 @@ import { Interaction } from "../interaction";
 // Message Component Type
 export const enum MsgComponentType {
     MessageComponent,
-
+    
     Text,
     Separator,
     ButtonRow,
@@ -11,19 +11,22 @@ export const enum MsgComponentType {
     AccessoryButton,
     StringSelect,
     MentionableSelect,
+    ChannelSelect,
+    InputText,
 
     Unknow
 }
 
 export const enum MsgComponentDisplayType {
     Message,
-    Modal
+    Modal,
+    Unknow
 }
 
 // class interface for the message component class
 export abstract class MessageComponentBase {
     readonly type: MsgComponentType
-    readonly displayType: MsgComponentDisplayType
+    protected _displayType: MsgComponentDisplayType
     protected msgcOwner: MessageComponentBase
     protected modified: boolean
     protected isNew: boolean
@@ -32,7 +35,7 @@ export abstract class MessageComponentBase {
     
     constructor(msgcOwner: MessageComponentBase, displayType: MsgComponentDisplayType, type: MsgComponentType) {
         this.type = type;
-        this.displayType = displayType;
+        this._displayType = displayType;
         this.msgcOwner = msgcOwner;
         this.modified = true;
         this.isNew = true;
@@ -53,6 +56,9 @@ export abstract class MessageComponentBase {
 
     get hasBeenModified() {
         return this.modified;
+    }
+    get displayType() {
+        return this._displayType
     }
 
     /**
@@ -85,6 +91,7 @@ export interface MsgComponentInteractiveJson {
 // option for a message component with an interaction
 export interface MsgComponentInteractiveOption {
     adminOnly?: boolean
+    required?: boolean
 }
 
 // interaction with a msg component

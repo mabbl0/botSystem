@@ -1,51 +1,44 @@
-import { CommReturn, commReturnError, MsgToSend, thenLogError } from "./comm-type"
-import { Message, MessageApi, MessageFunctionCore } from "./message"
+import { CommReturn, commReturnError, CommunicationAction, CommunicationFunction, MsgToSend, thenLogError } from "./comm-type"
+import { Message, MessageCore } from "./message"
 import { MessageComponent } from "./message-component/message-component"
 
 
-// channel information
-export interface ChannelApi {
-    name: string
-    send(msg: string | MsgToSend | MessageComponent): Promise<MessageApi>
-    toString(): string
-}
-
 export interface Channel {
     name: string
-    send(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<Message>
+    send(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<Message>
     toString(): string
 }
 
 export class ChannelCore implements Channel {
-    private channelApi: ChannelApi
-    private _beforeSentFct: (msg: MsgToSend) => boolean
-    
-    msgFct: MessageFunctionCore // useful for the message (send, copy, ..)
+    private channelApi: any
+    readonly name: string
+    private mentionStr: string
+
+    commFunction: CommunicationFunction
     
 
-    constructor(channelApi: ChannelApi){
+    constructor(channelApi: any, channelName: string, mentionStr: string){
         this.channelApi = channelApi;
-    }
-
-    get name() {
-        return this.channelApi.name;
-    }
-
-    set beforeSentFct(fct: (msg: string | MsgToSend) => boolean){
-        if(this._beforeSentFct == undefined){  // set once
-            this._beforeSentFct = fct;
-        }
+        this.name = channelName;
+        this.mentionStr = mentionStr;
     }
 
     /*** Methods Use ***/
 
     /**
+     * @returns Get channel mention
+     */
+    toString(){
+        return this.mentionStr;
+    }
+
+    /**
      * Send a message in the channel
      * @param msg message to send
-     * @param getMsgSent indicate to get a promise with the new message sent
+     * @param withReturn indicate to get a promise with the new message sent
      * @returns a promise resolve when the message is sent if askeed
      */
-    send(msg: string | MsgToSend | MessageComponent, getMsgSent?: boolean): CommReturn<Message> {
+    send(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<Message> {
         // Adapt the message to the MsgToSend format
         let msgToSend: MsgToSend;
         let isMsgcNeededMsg = false;
@@ -53,9 +46,9 @@ export class ChannelCore implements Channel {
             msgToSend = {content: msg as string};
         }
         else if((msg as MessageComponent).id != undefined) {
-            isMsgcNeededMsg = (msg as MessageComponent).needMsg;
             (msg as MessageComponent).adapt();
             msgToSend = {components: (msg as MessageComponent), option: (msg as MessageComponent).msgOption};
+            isMsgcNeededMsg = (msg as MessageComponent).needComm;
         }
         else {
             msgToSend = msg as MsgToSend;
@@ -63,39 +56,29 @@ export class ChannelCore implements Channel {
 
         // test, control, and adapt the message content for the api
         let shouldBeSent = true;
-        if(this._beforeSentFct != undefined){
-            shouldBeSent = this._beforeSentFct(msgToSend);
+        if(this.commFunction.beforeSentFct != undefined){
+            shouldBeSent = this.commFunction.beforeSentFct(msgToSend);
         }
         if(shouldBeSent==false) {
-            return commReturnError(getMsgSent);
+            return commReturnError(withReturn);
         }
 
-        if(getMsgSent || isMsgcNeededMsg) {
+        if(withReturn || isMsgcNeededMsg) {
             return new Promise<Message>( (resolveFct) => {
-                this.channelApi.send(msgToSend).then( (msgApi) => {
-                    let newMsg = new this.msgFct.messageConstructor();
-                    newMsg.copyFct(this);
-                    this.msgFct.adaptNewMessageContent(newMsg, msgApi);
+                this.commFunction.commActionApi<MessageCore>(CommunicationAction.ChannelSend, msgToSend, this.channelApi, false).then( (newMsg) => {
                     newMsg.botAuthor = true;
+                    newMsg.copyFct(this);
                     if(isMsgcNeededMsg) {
-                        (msg as MessageComponent).msgSent = newMsg;
+                        msgToSend.components.commSent = newMsg;
                     }
                     resolveFct(newMsg);
                 });
             });
         }
         else {
-            this.channelApi.send(msgToSend);
+            this.commFunction.commActionApi(CommunicationAction.ChannelSend, msgToSend, this.channelApi, true);
             return thenLogError;
         }
-    }
-
-    /**
-     * 
-     * @returns Get channel mention
-     */
-    toString(){
-        return this.channelApi.toString();
     }
 }
 
