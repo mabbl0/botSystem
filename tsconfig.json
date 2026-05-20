@@ -1,19 +1,19 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
-    "rootDir": "./src",
-    "outDir": "./dist",
-
-    // option
+    
+    // Type Checking
     "noImplicitOverride":true,
     "noImplicitAny":true,
     "noImplicitReturns":true,
     "noImplicitThis":true,
     "noUnusedLocals":true,
     "noUnusedParameters": true,
-
-    "removeComments": true,
+    "preserveConstEnums": true,
+    
+    // Emit
+    "outDir": "./dist",
+    "rootDir": "./src",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module

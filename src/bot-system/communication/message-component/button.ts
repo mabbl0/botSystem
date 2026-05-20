@@ -23,13 +23,13 @@ export interface ButtonBase {
 
 export class Button extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
-    private _label: string
+    #label: string
     interactionFct: (interaction: Interaction, button: Button) => void
-    private _option: ButtonOption
+    #option: ButtonOption
 
     constructor(msgcOwner: MessageComponentBase, button: ButtonBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
         super(msgcOwner, displayType, MsgComponentType.Button);
-        this._label = button.label;
+        this.#label = button.label;
         this.interactionFct = button.interactionFct;
 
         if(button.id != undefined) {
@@ -37,50 +37,50 @@ export class Button extends MessageComponentBase implements MsgComponentInteract
         }
         else {
             if(this.msgcOwner.getUniqueId != undefined) {
-                this.id = this.msgcOwner.getUniqueId() + this._label;
+                this.id = this.msgcOwner.getUniqueId() + this.#label;
             }
             else {
-                this.id = this._label;
+                this.id = this.#label;
             }
         }
 
         // setup default option
         if(button.option==undefined) {
-            this._option = {
+            this.#option = {
                 adminOnly: false,
                 disable: false
             }
         }
         else {
-            this._option = button.option;
-            if(this._option.adminOnly == undefined) {
-                this._option.adminOnly = false;
+            this.#option = button.option;
+            if(this.#option.adminOnly == undefined) {
+                this.#option.adminOnly = false;
             }
-            if(this._option.disable == undefined) {
-                this._option.disable = false;
+            if(this.#option.disable == undefined) {
+                this.#option.disable = false;
             }
-            if(this._option.color == undefined) {
-                this._option.color = ButtonColor.Black;
+            if(this.#option.color == undefined) {
+                this.#option.color = ButtonColor.Black;
             }
         }
 
         // disable button if it has no interaction
         if(button.interactionFct==undefined) {
-            this._option.disable = true;
+            this.#option.disable = true;
         }
     }
 
     get option() {
         this.modified = true;
-        return this._option;
+        return this.#option;
     }
     get label() {
         this.modified = true;
-        return this._label;
+        return this.#label;
     }
     set label(l: string) {
         this.modified = true;
-        this._label = l;
+        this.#label = l;
     }
     
     /**

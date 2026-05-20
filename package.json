@@ -1,6 +1,9 @@
 {
+  "name": "bot-system",
+  "version": "0.1.0",
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "dts-bundle-generator": "^9.5.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
@@ -10,7 +13,33 @@
     "opusscript": "^0.1.1",
     "sodium-native": "^5.1.0"
   },
+  "engines": {
+    "node": ">=25.8.1"
+  },
+  "directories": {
+    "lib": "src",
+    "test": "tests"
+  },
+  "files": [
+    "dist"
+  ],
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "license": "MIT",
+  "keywords": [
+    "bot",
+    "discord",
+    "node"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mabbl0/botSystem"
+  },
+  "bugs": {
+    "url": "https://github.com/mabbl0/botSystem/issues"
+  },
   "scripts": {
-    "build": "npx tsc"
+    "build": "tsc -p tsconfig.build.json && npm run build:type",
+    "build:type": "dts-bundle-generator --export-referenced-types false --out-file dist/index.d.ts src/index.ts"
   }
 }

@@ -38,6 +38,7 @@ interface HasMention {
     getAllMentionedUser(): User[]
 }
 
+
 export interface Message extends CommunicationBase<Message>, HasMention {
     content: string
     delete(): void
