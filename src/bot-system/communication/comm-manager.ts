@@ -12,6 +12,7 @@ import { Modal, ModalBase } from './message-component/modal';
 
 // TODO: remove / destroy the unsed message component
 
+/** @internal */
 export class CommManager extends UnitComponent {
     private commConf: CommunicationConf
 

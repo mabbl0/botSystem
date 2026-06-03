@@ -5,7 +5,7 @@ interface SubEvent<TArgs extends any[], ReturnType> {
 
 export class Event<TArgs extends any[], ReturnType> {
     readonly name: string
-    private subList: Array<SubEvent<TArgs, ReturnType>>
+    #subList: Array<SubEvent<TArgs, ReturnType>>
 
     /**
      * Event to be sub and call
@@ -13,14 +13,14 @@ export class Event<TArgs extends any[], ReturnType> {
      */
     constructor(name: string) {
         this.name = name;
-        this.subList = [];
+        this.#subList = [];
     }
 
     /**
      * Return the number of sub to the event
      */
     get nbSub(): number {
-        return this.subList.length;
+        return this.#subList.length;
     }
 
     /**
@@ -28,7 +28,7 @@ export class Event<TArgs extends any[], ReturnType> {
      * @param subName sub name to search
      */
     hasSub(subName: string): boolean {
-        return this.subList.find(s => s.subName == subName) != undefined;
+        return this.#subList.find(s => s.subName == subName) != undefined;
     }
 
     /**
@@ -37,7 +37,7 @@ export class Event<TArgs extends any[], ReturnType> {
      * @param fct function to call
      */
     addSub(subName: string, fct: (...args: TArgs) => ReturnType) {
-        this.subList.push({
+        this.#subList.push({
             subName: subName,
             fct: fct
         });
@@ -48,7 +48,7 @@ export class Event<TArgs extends any[], ReturnType> {
      * @param args arguments for each sub function call
      */
     call(...args: TArgs): void {
-        this.subList.forEach( sub =>
+        this.#subList.forEach( sub =>
             sub.fct(...args)
         );
     }
@@ -61,19 +61,19 @@ export class Event<TArgs extends any[], ReturnType> {
      * @returns for each reduce sub call. The Type can be different to the function sub return
      */
     callWithReturn<CallReturn>(initValue: CallReturn, returnReduceFct: (reduceReturn: CallReturn, nextReturn: ReturnType) => CallReturn, ...args: TArgs): CallReturn {
-        if(this.subList.length == 0) {
+        if(this.#subList.length == 0) {
             return initValue;
         }
 
         if(returnReduceFct!=undefined && initValue!=undefined) {
             let valueReturn: CallReturn = initValue;
-            this.subList.forEach( sub => {
+            this.#subList.forEach( sub => {
                 valueReturn = returnReduceFct( valueReturn, sub.fct(...args) );
             });
             return valueReturn;
         }
         else {
-            this.subList.forEach( sub =>
+            this.#subList.forEach( sub =>
                 sub.fct(...args)
             );
             return initValue;
@@ -91,10 +91,10 @@ export class Event<TArgs extends any[], ReturnType> {
         }
         
         let strReturn = `${this.name} event - ${this.nbSub} sub:\n> `;
-        for (let i = 0; i < this.subList.length - 1 ; i++) {
-            strReturn += this.subList[i].subName + ' - ';
+        for (let i = 0; i < this.#subList.length - 1 ; i++) {
+            strReturn += this.#subList[i].subName + ' - ';
         }
-        strReturn += this.subList[this.subList.length-1].subName + '\n';
+        strReturn += this.#subList[this.#subList.length-1].subName + '\n';
         return strReturn;
     }
 }

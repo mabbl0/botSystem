@@ -2,8 +2,9 @@ import { MapName } from "../../../tools/collection/map";
 import { checkExtensionList, existFile } from "../../../tools/file";
 import { UnitComponent } from "../../component/unit-component";
 import { BotVoiceControlAPI } from "../../interface-api/interface-api-type";
-import { PlayAudioOption, VoiceChannel } from "./voice-type";
+import { PlayAudioOption, VoiceChannel } from "./voice-channel";
 
+/** @intrenal */
 export class VoiceManager extends UnitComponent {
     private voiceChannels: MapName<VoiceChannel>
     private voiceControlApi: BotVoiceControlAPI

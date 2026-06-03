@@ -9,6 +9,7 @@ export interface Channel {
     toString(): string
 }
 
+/** @intrenal */
 export class ChannelCore implements Channel {
     private channelApi: any
     readonly name: string

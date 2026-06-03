@@ -4,7 +4,7 @@ import { VoiceConnection, AudioPlayer, AudioPlayerStatus, joinVoiceChannel, crea
 import Discord from "discord.js"
 
 import { createReadStream } from 'fs'
-import { PlayAudioOption, VoiceChannel } from "../bot-system/communication/voice/voice-type";
+import { PlayAudioOption, VoiceChannel } from "../bot-system/communication/voice/voice-channel";
 import { BotVoiceControlAPI } from "../bot-system/interface-api/interface-api-type";
 import { DiscordInterface } from "./discord-interface-api";
 import { LogLevel } from '../bot-system/component/component-type';
@@ -21,6 +21,7 @@ type NewConnectionStateEvent = NewStateEvent<VoiceConnectionStatus,VoiceConnecti
 type NewPlayerStateEvent = NewStateEvent<AudioPlayerStatus,AudioPlayerState>
 
 
+/** @internal */
 export class BotVoiceControlDiscord implements BotVoiceControlAPI {
     private discordApi: DiscordInterface
     private currentConnection: VoiceConnection

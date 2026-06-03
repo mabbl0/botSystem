@@ -39,7 +39,7 @@
     "url": "https://github.com/mabbl0/botSystem/issues"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && npm run build:type",
-    "build:type": "dts-bundle-generator --export-referenced-types false --out-file dist/index.d.ts src/index.ts"
+    "build": "tsc && npm run build:dts",
+    "build:dts": "dts-bundle-generator --project tsconfig.dts.json --export-referenced-types false --out-file dist/index.d.ts src/index.ts"
   }
 }

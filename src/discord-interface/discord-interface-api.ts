@@ -13,19 +13,33 @@ import { AdaptCommDiscord } from "./adapt-comm-api"
 
 
 export class DiscordInterface implements InterfaceAPI {
+    /** @internal */
     discordConf: DiscordInterfaceConf
+    /** @internal */
     bot: Discord.Client
+    /** @internal */
     guild: Discord.Guild
 
+    /** @internal */
     log: (logLevel: number, txt: string) => void
 
+    /** @internal */
     event: EventDiscord
+    /** @internal */
     adaptComm: AdaptCommAPI
+    /** @internal */
     chat: ChatDiscord
+    /** @internal */
     command: CommandDiscord
+    /** @internal */
     mentioned: MentionedDiscord
+    /** @internal */
     voiceControl: BotVoiceControlDiscord
 
+    /**
+     * create the discord interface api for botSystem
+     * @param discordConfPath path to the discord interface api configuration file
+     */
     constructor(discordConfPath: string) {
         this.discordConf = loadData<DiscordInterfaceConf>(discordConfPath);
 
@@ -59,7 +73,10 @@ export class DiscordInterface implements InterfaceAPI {
         return this.discordConf.name;
     }
 
-    // Start the bot
+    
+    /** Start the bot
+     * @internal 
+     */
     startBot() {
         this.bot.login(this.discordConf.botToken);
     }

@@ -10,12 +10,12 @@ import { MthAddPrototype, MthGetPrototype, MthInitPrototype } from '../method/me
 export abstract class Unit {
     readonly name: string
     readonly description: string
-    private _ptrType: {value: ComponentType}
+    #ptrType: {value: ComponentType}
     propLogLevel: Prop<LogLevel>
-    private propLogOnBotChannel: Prop<boolean>
+    #propLogOnBotChannel: Prop<boolean>
 
     mthInterface: MethodInterface
-    private logInterface: LogInterface
+    #logInterface: LogInterface
     propInterface: PropInterface
 
     /**
@@ -23,14 +23,14 @@ export abstract class Unit {
      * @param name Component name
      */
     constructor(name: string, description: string){
-        this._ptrType = {value: ComponentType.BotSystem};
+        this.#ptrType = {value: ComponentType.BotSystem};
         // init default prop
         this.propLogLevel = new Prop<LogLevel>("logLevel", LogLevel.Info);
-        this.propLogOnBotChannel = new Prop<boolean>("logOnBotChannel", false);
+        this.#propLogOnBotChannel = new Prop<boolean>("logOnBotChannel", false);
 
         // initiate interface tool
-        this.mthInterface = new MethodInterface(name, this._ptrType, Unit._tmpAddMth, Unit._tmpGetMth, Unit._tmpInitMth);
-        this.logInterface = new LogInterface(name);
+        this.mthInterface = new MethodInterface(name, this.#ptrType, Unit._tmpAddMth, Unit._tmpGetMth, Unit._tmpInitMth);
+        this.#logInterface = new LogInterface(name);
         this.propInterface = new PropInterface(name, this.mthInterface);
 
         if(name==undefined || name?.length == 0){
@@ -49,12 +49,17 @@ export abstract class Unit {
         this.logDebug(`Unit ${name} created`);
     }
 
+    /** add the properties of the unit
+     * @internal
+     */
     private initUnitProps(){
         this.propInterface.addProp(this.propLogLevel);
-        this.propInterface.addProp(this.propLogOnBotChannel);
+        this.propInterface.addProp(this.#propLogOnBotChannel);
     }
 
-    // update the unit (in case if it can not be init in the constructor)
+    /** update the unit (in case if it can not be init in the constructor)
+     * @internal
+     */
     updateUnit(){
         this.mthInterface.initInterface(Unit._tmpAddMth, Unit._tmpGetMth, Unit._tmpInitMth);
         this.propInterface.initInterface();
@@ -65,11 +70,11 @@ export abstract class Unit {
     /*** Getter / Setter Methods ***/
 
     get type(): ComponentType {
-        return this._ptrType.value;
+        return this.#ptrType.value;
     }
     set type(t: ComponentType){
-        if(this._ptrType.value == ComponentType.BotSystem && t != ComponentType.BotSystem){
-            this._ptrType.value = t;
+        if(this.#ptrType.value == ComponentType.BotSystem && t != ComponentType.BotSystem){
+            this.#ptrType.value = t;
         }
     }
 
@@ -81,7 +86,7 @@ export abstract class Unit {
 
     // log with log level: 1 error ; 2 info ; 3 debug
     log(logLevel: number, txt: string){
-        this.logInterface.log( this.propLogLevel.value, logLevel, this.propLogOnBotChannel.value, txt);
+        this.#logInterface.log( this.propLogLevel.value, logLevel, this.#propLogOnBotChannel.value, txt);
     }
     // log with error log level
     logError(txt: string){
@@ -100,17 +105,26 @@ export abstract class Unit {
         this.log(LogLevel.Debug,txt);
     }
 
-    // initiate the botChannel for the logInterface
+    /**
+     * initiate the botChannel for the #logInterface
+     * @param sentFct function to send to the bot channel
+     * @internal
+     */
     initLogInBotChannel(sentFct: (msg: string)=>void){
-        this.logInterface.mthSendMsgToBotChannel = sentFct;
+        this.#logInterface.mthSendMsgToBotChannel = sentFct;
     }
 
 
-    /*** Tempory Static add and get methods*/
+    /*** Tempory Static add and get methods ****/
+
+    /** @internal */
     private static _tmpAddMth: MthAddPrototype
+    /** @internal */
     private static _tmpGetMth: MthGetPrototype
+    /** @internal */
     private static _tmpInitMth: MthInitPrototype
 
+    /** @internal */
     static initUnit(addMth: MthAddPrototype, getMth: MthGetPrototype, initMth: MthInitPrototype){
         if(Unit._tmpAddMth==undefined && Unit._tmpGetMth==undefined && Unit._tmpInitMth==undefined){ // only once
             Unit._tmpAddMth = addMth;
@@ -118,6 +132,7 @@ export abstract class Unit {
             Unit._tmpInitMth = initMth;
         }
     }
+    /** @internal */
     static resetTmp(){
         Unit._tmpAddMth = undefined;
         Unit._tmpGetMth = undefined;

@@ -23,6 +23,7 @@ interface MsgcToAdd<DataType> {
 
 // TODO: label modal [1-45]
 
+/** @internal */
 export class MsgComponentAdapter implements MsgComponentAdapterApi {
     static InputTxtAdaptCount: number = 0
     msgcAdapted: DiscordMsgComponentData

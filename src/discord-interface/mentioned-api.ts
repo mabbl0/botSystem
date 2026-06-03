@@ -5,6 +5,7 @@ import { User } from "../bot-system/user/user";
 import { MapName, MapNameId } from "../tools/collection/map";
 
 
+/** @internal */
 export class MentionedDiscord implements MentionedAPI {
     /**
      * Detect the mentioned users in a string

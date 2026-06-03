@@ -27,6 +27,7 @@ export class Button extends MessageComponentBase implements MsgComponentInteract
     interactionFct: (interaction: Interaction, button: Button) => void
     #option: ButtonOption
 
+    /** @internal */
     constructor(msgcOwner: MessageComponentBase, button: ButtonBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
         super(msgcOwner, displayType, MsgComponentType.Button);
         this.#label = button.label;

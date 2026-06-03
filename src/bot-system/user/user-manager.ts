@@ -4,6 +4,7 @@ import { UserConf } from "../bot-system-type";
 import { MapNameId } from "../../tools/collection/map";
 import { Role } from "./role";
 
+/** @internal */
 export class UserManager extends UnitComponent {
     private conf: UserConf
     private users: MapNameId<User>

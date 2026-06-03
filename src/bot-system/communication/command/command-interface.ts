@@ -12,23 +12,30 @@ type AddSlashCmdPrototype = (slashCmdName: string, ownerName: string, descriptio
 
 /*** interface Class to help componenent to add txtCmd and slashCmd ***/
 export class CommandInterface {
-    private unit: Unit
-    private propBsState: PropAccess<BotSystemState>
-    private mthAddTxtCmd: AddTxtCmdPrototype
-    private mthAddSlashCmd: AddSlashCmdPrototype
+    #unit: Unit
+    #propBsState: PropAccess<BotSystemState>
+    #mthAddTxtCmd: AddTxtCmdPrototype
+    #mthAddSlashCmd: AddSlashCmdPrototype
 
-    // constructor to init command interface
+    /**
+     * constructor to init command interface
+     * @param unit the unit component
+     * @internal
+     */
     constructor(unit: Unit) {
-        this.unit = unit;
-        this.propBsState = this.unit.propInterface.getProp("BotSystem", "botSystemState");
+        this.#unit = unit;
+        this.#propBsState = this.#unit.propInterface.getProp("BotSystem", "botSystemState");
 
         this.initInterface();
     }
 
-    // initiate the interface (in case if it can not be init in the constructor)
+    /**
+     * initiate the interface (in case if it can not be init in the constructor)
+     * @internal
+     */
     initInterface(){
-        this.mthAddTxtCmd = this.unit.mthInterface.getMethod<AddTxtCmdPrototype>("CommandManager", "addTxtCmd");
-        this.mthAddSlashCmd = this.unit.mthInterface.getMethod<AddSlashCmdPrototype>("CommandManager", "addSlashCmd");
+        this.#mthAddTxtCmd = this.#unit.mthInterface.getMethod<AddTxtCmdPrototype>("CommandManager", "addTxtCmd");
+        this.#mthAddSlashCmd = this.#unit.mthInterface.getMethod<AddSlashCmdPrototype>("CommandManager", "addSlashCmd");
     }
 
     /**
@@ -39,9 +46,9 @@ export class CommandInterface {
      * @param option option for the text command
      */
     addTxtCmd(txtCmdName: string, description: string, fct: TxtCmdFct, option?: TxtCmdOption) {
-        if(this.mthAddTxtCmd){
-            this.mthAddTxtCmd(txtCmdName,
-                this.unit.name,
+        if(this.#mthAddTxtCmd){
+            this.#mthAddTxtCmd(txtCmdName,
+                this.#unit.name,
                 description,
                 fct,
                 (option != undefined) ? option : {});
@@ -57,13 +64,13 @@ export class CommandInterface {
      * @param option option for the slash command
      */
     addSlashCmd(slashCmdName: string, description: string, fct: (interaction: Interaction) => void, args?: Array<InteractionArgument>, option?: SlashCmdOption) {
-        if(this.propBsState.value != BotSystemState.Start && this.propBsState.value != BotSystemState.Initialization ){
-            this.unit.logError('slash command has to be add in Initialization (component constructor)');
+        if(this.#propBsState.value != BotSystemState.Start && this.#propBsState.value != BotSystemState.Initialization ){
+            this.#unit.logError('slash command has to be add in Initialization (component constructor)');
             return;
         }
-        if(this.mthAddSlashCmd){
-            this.mthAddSlashCmd(slashCmdName,
-                this.unit.name,
+        if(this.#mthAddSlashCmd){
+            this.#mthAddSlashCmd(slashCmdName,
+                this.#unit.name,
                 description,
                 fct,
                 (args != undefined) ? args : [],

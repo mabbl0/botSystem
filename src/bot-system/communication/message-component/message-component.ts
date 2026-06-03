@@ -13,27 +13,29 @@ import { ChannelSelect, ChannelSelectBase } from "./channel-select";
 // TODO: update !click command
 
 export class MessageComponent extends MessageComponentBase {
+    /** @intrenal */
     msgComponents: MessageComponentBase[]
     readonly id: string
-    private msgcCounter: number
-    private _commSent: CommunicationBase<Message>
+    #msgcCounter: number
+    #commSent: CommunicationBase<Message>
     msgOption: MsgOption
-    private addMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
-    private removeMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
-    private adapterConstruct: new () => MsgComponentAdapterApi
+    #addMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
+    #removeMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
+    #adapterConstruct: new () => MsgComponentAdapterApi
     
+    /** @internal */
     constructor(id: string, addMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, removeMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, adapterConstruct?: new () => MsgComponentAdapterApi) {
         super(undefined, MsgComponentDisplayType.Message, MsgComponentType.MessageComponent);
         this.msgComponents = [];
         this.id = id;
-        this.msgcCounter = 0;
-        this.addMsgComponentInteraction = addMsgComponentInteraction;
-        this.removeMsgComponentInteraction = removeMsgComponentInteraction;
-        this.adapterConstruct = adapterConstruct;
-        if(this.adapterConstruct != undefined) {
-            this.adapter = new this.adapterConstruct();
+        this.#msgcCounter = 0;
+        this.#addMsgComponentInteraction = addMsgComponentInteraction;
+        this.#removeMsgComponentInteraction = removeMsgComponentInteraction;
+        this.#adapterConstruct = adapterConstruct;
+        if(this.#adapterConstruct != undefined) {
+            this.adapter = new this.#adapterConstruct();
         }
-        this._commSent = undefined;
+        this.#commSent = undefined;
         this.msgOption = {};
         this.interactiveComponents = [];
     }
@@ -43,43 +45,45 @@ export class MessageComponent extends MessageComponentBase {
      * @param notDeleteMsg indicate to not delete the message
      */
     override destroy(notDeleteMsg?: boolean) {
-        if(this._commSent && !notDeleteMsg && (this._commSent as Message).delete != undefined) {
-            (this._commSent as Message).delete();
+        if(this.#commSent && !notDeleteMsg && (this.#commSent as Message).delete != undefined) {
+            (this.#commSent as Message).delete();
         }
         // remove the msg component with interaction from the manager
-        if(this.removeMsgComponentInteraction) {
-            this.removeMsgComponentInteraction(this.interactiveComponents);
+        if(this.#removeMsgComponentInteraction) {
+            this.#removeMsgComponentInteraction(this.interactiveComponents);
         }
         
         this.msgComponents.forEach( msgC => {
             msgC.destroy();
         });
         this.msgComponents = undefined;
-        this.addMsgComponentInteraction = undefined;
-        this.removeMsgComponentInteraction = undefined;
+        this.#addMsgComponentInteraction = undefined;
+        this.#removeMsgComponentInteraction = undefined;
     }
 
-
+    /** @intrenal */
     set commSent(commSent: CommunicationBase<Message>) {
-        if(this._commSent==undefined) { // only once
-            this._commSent = commSent;
+        if(this.#commSent==undefined) { // only once
+            this.#commSent = commSent;
         }
     }
+    /** @intrenal */
     get needComm(): boolean {
-        return this._commSent == undefined;
+        return this.#commSent == undefined;
     }
 
     /**
      * add a new message component
      * @param newMsgComponent the new message component to add
      * @returns the new message component added
+     * @intrenal
      */
     private addNewMessageComponent<MsgComponentType extends MessageComponentBase>(newMsgComponent: MsgComponentType): MsgComponentType {
         this.msgComponents.push(newMsgComponent);
-        if(this.adapterConstruct != undefined) {
-            newMsgComponent.adapter = new this.adapterConstruct();
+        if(this.#adapterConstruct != undefined) {
+            newMsgComponent.adapter = new this.#adapterConstruct();
         }
-        this.msgcCounter += 1;
+        this.#msgcCounter += 1;
         return newMsgComponent;
     }
 
@@ -87,6 +91,7 @@ export class MessageComponent extends MessageComponentBase {
      * add a new message component
      * @param newMsgComponent the new message component to add
      * @returns the new message component added
+     * @intrenal
      */
     private addNewInteractiveMessageComponent<MsgComponentType extends MessageComponentBase>(newMsgComponent: MsgComponentType): MsgComponentType {
         newMsgComponent.interactiveComponents.forEach( iComponent => this.interactiveComponents.push(iComponent));
@@ -116,7 +121,7 @@ export class MessageComponent extends MessageComponentBase {
      * @returns the new row button created
      */
     addButtonRow(buttons: ButtonBase[]): ButtonRow {
-        return this.addNewInteractiveMessageComponent(new ButtonRow(this, buttons, this.adapterConstruct, this.displayType));
+        return this.addNewInteractiveMessageComponent(new ButtonRow(this, buttons, this.#adapterConstruct, this.displayType));
     }
 
     /**
@@ -126,7 +131,7 @@ export class MessageComponent extends MessageComponentBase {
      * @returns the new accessory created
      */
     addAccessoryButton(text: string, button: ButtonBase): AccessoryButton {
-        return this.addNewInteractiveMessageComponent(new AccessoryButton(this, text, button, this.adapterConstruct, this.displayType));
+        return this.addNewInteractiveMessageComponent(new AccessoryButton(this, text, button, this.#adapterConstruct, this.displayType));
     }
 
     /**
@@ -169,10 +174,10 @@ export class MessageComponent extends MessageComponentBase {
      * Update the message
      */
     override update() {
-        if(this._commSent != undefined) {
+        if(this.#commSent != undefined) {
             // adapt, if modified, the message component before to edit
             this.adapter?.adapt(this); 
-            this._commSent.edit(this);
+            this.#commSent.edit(this);
         }
     }
 
@@ -189,16 +194,17 @@ export class MessageComponent extends MessageComponentBase {
      * @returns a unique id for the message component
      */
     override getUniqueId(): string {
-        return this.id + this.msgcCounter.toString();
+        return this.id + this.#msgcCounter.toString();
     }
 
     /**
      * prepare the message component to be sent
+     * @intrenal
      */
     prepareToSend() {
         // fisrt indicate and update the msg component with interaction
-        if(this.addMsgComponentInteraction) {
-            this.addMsgComponentInteraction(this.interactiveComponents);
+        if(this.#addMsgComponentInteraction) {
+            this.#addMsgComponentInteraction(this.interactiveComponents);
         }
     }
 }

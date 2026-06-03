@@ -6,19 +6,19 @@ import { SlashCmd, TxtCmd } from "./command-type";
 import { InteractionRecycled, Interaction, InteractionArgument, InteractionArgumentType } from "../interaction";
 import { Message } from "../message";
 
-
+/** @internal */
 export class CommandManager extends UnitComponent {
-    private txtCmdArray: MapName<TxtCmd>
-    private txtCmdNotInRunArray: MapName<TxtCmd>
-    private slashCmdArray: MapName<SlashCmd>
+    #txtCmdArray: MapName<TxtCmd>
+    #txtCmdNotInRunArray: MapName<TxtCmd>
+    #slashCmdArray: MapName<SlashCmd>
 
-    private _botApiCmdUpdate: () => void;
+    #_botApiCmdUpdate: () => void;
 
     constructor() {
         super("CommandManager", "Manage BotSystem Command");
-        this.txtCmdArray = new MapName<TxtCmd>();
-        this.txtCmdNotInRunArray = new MapName<TxtCmd>();
-        this.slashCmdArray = new MapName<SlashCmd>();
+        this.#txtCmdArray = new MapName<TxtCmd>();
+        this.#txtCmdNotInRunArray = new MapName<TxtCmd>();
+        this.#slashCmdArray = new MapName<SlashCmd>();
 
         this.mthInterface.addMethod("addTxtCmd", this.addTxtCmd.bind(this));
         this.mthInterface.addMethod("addSlashCmd", this.addSlashCommand.bind(this));
@@ -54,7 +54,7 @@ export class CommandManager extends UnitComponent {
      */
     addTxtCmd(txtCmdName: string, ownerName: string, description: string, fct: (msg: Message, arg: string) => void, option?: TxtCmdOption) {
         this.logInfo(`${ownerName} add txtCmd: '${txtCmdName}'`);
-        this.txtCmdArray.set(
+        this.#txtCmdArray.set(
             new TxtCmd(txtCmdName, ownerName, description, fct, (option != undefined) ? option : {})
         );
     }
@@ -74,7 +74,7 @@ export class CommandManager extends UnitComponent {
         }
 
         this.logInfo(`${ownerName} add txtCmd notInRun: '${txtCmdName}'`);
-        this.txtCmdNotInRunArray.set(
+        this.#txtCmdNotInRunArray.set(
             new TxtCmd(txtCmdName, ownerName, description, fct, (option != undefined) ? option : {})
         );
     }
@@ -93,10 +93,10 @@ export class CommandManager extends UnitComponent {
 
             let txtCmdFound: TxtCmd;
             if (inRun) {
-                txtCmdFound = this.txtCmdArray.get(txtCmdName);
+                txtCmdFound = this.#txtCmdArray.get(txtCmdName);
             }
             else {
-                txtCmdFound = this.txtCmdNotInRunArray.get(txtCmdName);
+                txtCmdFound = this.#txtCmdNotInRunArray.get(txtCmdName);
             }
 
             // Try to Execute the text Command found
@@ -121,20 +121,20 @@ export class CommandManager extends UnitComponent {
 
     // give all commands: guild, global, slashCmd, contextCmd, ..
     get cmdMap(): MapName<SlashCmd> {
-        return this.slashCmdArray;
+        return this.#slashCmdArray;
     }
 
     set botApiCmdUpdate(fct: () => void) {
-        if (this._botApiCmdUpdate == undefined) { // set once
-            this._botApiCmdUpdate = fct;
+        if (this.#_botApiCmdUpdate == undefined) { // set once
+            this.#_botApiCmdUpdate = fct;
         }
     }
 
     // call the interfaceApi to update the bot slash commands
     updateBotApiCommands() {
         this.logInfo("Update Bot Api Commands");
-        this._botApiCmdUpdate();
-        if (this._botApiCmdUpdate != undefined) {
+        this.#_botApiCmdUpdate();
+        if (this.#_botApiCmdUpdate != undefined) {
         }
     }
 
@@ -151,14 +151,14 @@ export class CommandManager extends UnitComponent {
      */
     addSlashCommand(slashCmdName: string, ownerName: string, description: string, fct: (interaction: Interaction) => void, args?: Array<InteractionArgument>, option?: SlashCmdOption) {
         this.logInfo(`${ownerName} add slashCmd: '${slashCmdName}'`);
-        this.slashCmdArray.set(
+        this.#slashCmdArray.set(
             new SlashCmd(slashCmdName, ownerName, description, fct, (args != undefined) ? args : [], (option != undefined) ? option : {})
         );
     }
 
     // find, check, then execute a slash command
     execSlashCmd(interaction: InteractionRecycled) {
-        let slashCmdFound = this.slashCmdArray.get(interaction.name);
+        let slashCmdFound = this.#slashCmdArray.get(interaction.name);
         if (!slashCmdFound)
             return;
 
@@ -189,7 +189,7 @@ export class CommandManager extends UnitComponent {
         let txtCmdAnsAdmin = "";
         let nbTxtCmd = 0;
         let nbTxtCmdAdmin = 0;
-        this.txtCmdArray.forEach(txtCmd => {
+        this.#txtCmdArray.forEach(txtCmd => {
             if (txtCmd.authorized(comm.author) && (!hasAresearch || txtCmd.correspondingToResearch(researchStr)) ) {
                 nbTxtCmd += 1;
                 if(txtCmd.option.adminOnly) {
@@ -202,7 +202,7 @@ export class CommandManager extends UnitComponent {
             }
         });
         if (userAdmin) {
-            this.txtCmdNotInRunArray.forEach(txtCmd => {
+            this.#txtCmdNotInRunArray.forEach(txtCmd => {
                 if (!hasAresearch || txtCmd.correspondingToResearch(researchStr)) {
                     nbTxtCmd += 1;
                     txtCmdAnsAdmin += '- ' + txtCmd.toString4Dev() + '\n';
@@ -217,7 +217,7 @@ export class CommandManager extends UnitComponent {
         let slashCmdAnsAdmin = "";
         let nbSlashCmd = 0;
         let nbSlashCmdAdmin = 0;
-        this.slashCmdArray.forEach(slashCmd => {
+        this.#slashCmdArray.forEach(slashCmd => {
             if (slashCmd.authorized(comm.author) && (!hasAresearch || slashCmd.correspondingToResearch(researchStr)) ) {
                 nbSlashCmd += 1;
                 if(slashCmd.option.adminOnly) {
@@ -258,13 +258,13 @@ export class CommandManager extends UnitComponent {
         let strReturn = '';
         let strTxtCmd = '';
         let nbTxtCmd = 0;
-        this.txtCmdArray.forEach(cmd => {
+        this.#txtCmdArray.forEach(cmd => {
             if(cmd.ownerName == componentName) {
                 nbTxtCmd += 1;
                 strTxtCmd += '  - ' + cmd.toString() + '\n';
             }
         });
-        this.txtCmdNotInRunArray.forEach(cmd => {
+        this.#txtCmdNotInRunArray.forEach(cmd => {
             if(cmd.ownerName == componentName) {
                 nbTxtCmd += 1;
                 strTxtCmd += '  - ' + cmd.toString() + '\n';
@@ -277,7 +277,7 @@ export class CommandManager extends UnitComponent {
         
         let strSlashCmd = '';
         let nbSlashCmd = 0;
-        this.slashCmdArray.forEach(cmd => {
+        this.#slashCmdArray.forEach(cmd => {
             if(cmd.ownerName == componentName) {
                 nbSlashCmd += 1;
                 strSlashCmd += '  - ' + cmd.toString() + '\n';

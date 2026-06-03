@@ -23,6 +23,7 @@ export class Modal extends MessageComponent implements MsgComponentInteractive {
     interactionFct: (interaction: Interaction, msgci: MsgComponentInteractive) => void
     option: MsgComponentInteractiveOption
 
+    /** @internal */
     constructor(id: string, modal: ModalBase, addMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, removeMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, adapterConstruct?: new () => MsgComponentAdapterApi) {
         super(id, addMsgComponentInteraction, removeMsgComponentInteraction, adapterConstruct);
         this._displayType = MsgComponentDisplayType.Modal;

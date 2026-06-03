@@ -23,16 +23,24 @@ export const enum MsgComponentDisplayType {
     Unknow
 }
 
-// class interface for the message component class
+/** class interface for the message component class
+ */
 export abstract class MessageComponentBase {
     readonly type: MsgComponentType
+    /** @internal */
     protected _displayType: MsgComponentDisplayType
+    /** @internal */
     protected msgcOwner: MessageComponentBase
+    /** @internal */
     protected modified: boolean
+    /** @internal */
     protected isNew: boolean
+    /** @internal */
     adapter: MsgComponentAdapterApi
+    /** @internal */
     interactiveComponents: MsgComponentInteractive[]
     
+    /** @internal */
     constructor(msgcOwner: MessageComponentBase, displayType: MsgComponentDisplayType, type: MsgComponentType) {
         this.type = type;
         this._displayType = displayType;
@@ -48,15 +56,21 @@ export abstract class MessageComponentBase {
         this.msgcOwner = undefined;
     }
     
+    /**
+     * call the message component owner update
+     * to update all the message component use in the message 
+     */
     update() {
         // msgc adapt will be call the owner component
         // this.adapt();
         this.msgcOwner?.update();
     }
 
+    /** @internal */
     get hasBeenModified() {
         return this.modified;
     }
+    /** @internal */
     get displayType() {
         return this._displayType
     }
@@ -77,6 +91,7 @@ export abstract class MessageComponentBase {
         return false;
     }
     
+    /** @internal */
     getUniqueId?(): string
 }
 

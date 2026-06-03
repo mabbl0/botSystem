@@ -19,8 +19,9 @@ export interface InputTxtBase {
 export class InputText extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
     interactionFct: (interaction: Interaction, inputText: InputText) => void
-    private _option: InputTxtOption
+    #option: InputTxtOption
 
+    /** @internal */
     constructor(msgcOwner: MessageComponentBase, inputText: InputTxtBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
         super(msgcOwner, displayType, MsgComponentType.InputText);
 
@@ -40,31 +41,31 @@ export class InputText extends MessageComponentBase implements MsgComponentInter
 
         // setup option
         if (inputText?.option == undefined) {
-            this._option = {
+            this.#option = {
                 label: 'input text',
                 required: true,
                 adminOnly: false
             }
         }
         else {
-            this._option = inputText?.option;
-            if (this._option.label == undefined) {
-                this._option.label = 'input text';
+            this.#option = inputText?.option;
+            if (this.#option.label == undefined) {
+                this.#option.label = 'input text';
             }
-            if (this._option.required == undefined) {
-                this._option.required = true;
+            if (this.#option.required == undefined) {
+                this.#option.required = true;
             }
-            if (this._option.adminOnly == undefined) {
-                this._option.adminOnly = false;
+            if (this.#option.adminOnly == undefined) {
+                this.#option.adminOnly = false;
             }
         }
 
-        if(this._option.minLength > this._option.maxLength) {
-            this._option.minLength = this._option.maxLength;
+        if(this.#option.minLength > this.#option.maxLength) {
+            this.#option.minLength = this.#option.maxLength;
         }
         // disable string select if it has no interaction
         if (this.interactionFct == undefined) {
-            this._option.disable = true;
+            this.#option.disable = true;
         }
 
         this.interactiveComponents = [this];
@@ -72,7 +73,7 @@ export class InputText extends MessageComponentBase implements MsgComponentInter
 
     get option() {
         this.modified = true;
-        return this._option;
+        return this.#option;
     }
     
     /**

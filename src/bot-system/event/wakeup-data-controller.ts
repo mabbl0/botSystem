@@ -16,43 +16,47 @@ export interface WakeupDateJson {
  */
 
 export class WakeupDateController {
-    private wudMap: MapName<WakeupDateEvent<any>>
-    private nextCall: number // date of the next sub call
-    private log: (logLevel: number, txt: string) => void
-    saveFct: ()=>void
+    #wudMap: MapName<WakeupDateEvent<any>>
+    #nextCall: number // date of the next sub call
+    #log: (logLevel: number, txt: string) => void
+    #saveFct: ()=>void
 
-    private timeoutDateList: Array<number> // sorted list
-    private maxWait: number
+    #timeoutDateList: Array<number> // sorted list
+    #maxWait: number
 
-    private propNbTimeout: Prop<number>
-    private propNbSubEvent: Prop<number>
+    #propNbTimeout: Prop<number>
+    #propNbSubEvent: Prop<number>
 
     constructor(log: (logLevel: number, txt: string) => void, propInterface: PropInterface, saveFct: ()=>void, maxWait?: number) {
-        this.wudMap = new MapName<WakeupDateEvent<any>>();
-        this.nextCall = 0;
-        this.log = log;
-        this.saveFct = saveFct;
+        this.#wudMap = new MapName<WakeupDateEvent<any>>();
+        this.#nextCall = 0;
+        this.#log = log;
+        this.#saveFct = saveFct;
 
-        this.timeoutDateList = [];
-        this.maxWait = maxWait;
+        this.#timeoutDateList = [];
         if(maxWait==undefined || maxWait > 2_160_000_000) {
-            this.maxWait = 2_160_000_000; // 25 days in ms
+            this.#maxWait = 2_160_000_000; // 25 days in ms
+        }
+        else {
+            this.#maxWait = maxWait;
         }
         
-        this.propNbTimeout = propInterface.createAndAddProp('nbTimeout', 0, {readOnly: true});
-        this.propNbSubEvent = propInterface.createAndAddProp('nbSubEvent', 0, {readOnly: true});
+        this.#propNbTimeout = propInterface.createAndAddProp('nbTimeout', 0, {readOnly: true});
+        this.#propNbSubEvent = propInterface.createAndAddProp('nbSubEvent', 0, {readOnly: true});
     }
 
     get size(): number {
-        return this.wudMap.size;
+        return this.#wudMap.size;
     }
 
     get nbSub(): number {
-        return this.wudMap.reduce<number>(0, (r,e) => r + e.nbSub);
+        return this.#wudMap.reduce<number>(0, (r,e) => r + e.nbSub);
     }
 
 
-    // init the timeout at boot
+    /**
+     * init the timeout at boot
+     */
     boot() {
         this.startTimeout();
     }
@@ -65,22 +69,22 @@ export class WakeupDateController {
      * @param option option for the event
      */
     addNewWakeupDateEvent<TArgs>(eventName: string, ownerName: string, fct: (args: TArgs) => void, option?: WakeupDateOption) {
-        let wudFound = this.wudMap.get(eventName);
+        let wudFound = this.#wudMap.get(eventName);
         if (wudFound != undefined) {
             if (wudFound.ready == false) {
                 wudFound.setFct(fct);
                 wudFound.ownerName = ownerName;
                 wudFound.setSubAddedCall( this.subAdded.bind(this) );
-                this.log(LogLevel.Info, `Wake up date event '${eventName}' ready`);
+                this.#log(LogLevel.Info, `Wake up date event '${eventName}' ready`);
                 return;
             }
-            this.log(LogLevel.Error, `There is already a '${eventName}' wake up date event.`);
+            this.#log(LogLevel.Error, `There is already a '${eventName}' wake up date event.`);
             return;
         }
         let wudEvent = new WakeupDateEvent(eventName, ownerName, fct, option);
         wudEvent.setSubAddedCall( this.subAdded.bind(this) );
-        this.wudMap.set(wudEvent);
-        this.log(LogLevel.Info, `New wake up date event add: '${eventName}'`);
+        this.#wudMap.set(wudEvent);
+        this.#log(LogLevel.Info, `New wake up date event add: '${eventName}'`);
     }
 
     /**
@@ -90,24 +94,24 @@ export class WakeupDateController {
      * @param option option for the event
      */
     addWakeupDateEvent<TArgs>(wudEventToAdd: WakeupDateEvent<TArgs>) {
-        let wudFound = this.wudMap.get(wudEventToAdd.name);
+        let wudFound = this.#wudMap.get(wudEventToAdd.name);
         if (wudFound != undefined) {
             if (wudFound.ready == false) {
                 wudEventToAdd.copySub(wudFound);
                 wudFound.ownerName = wudEventToAdd.ownerName;
                 wudEventToAdd.setSubAddedCall( this.subAdded.bind(this) );
                 // replace in the map
-                this.wudMap.delete(wudEventToAdd.name);
-                this.wudMap.set(wudEventToAdd);
-                this.log(LogLevel.Info, `Wake up date event '${wudFound.name}' update and ready`);
+                this.#wudMap.delete(wudEventToAdd.name);
+                this.#wudMap.set(wudEventToAdd);
+                this.#log(LogLevel.Info, `Wake up date event '${wudFound.name}' update and ready`);
                 return;
             }
-            this.log(LogLevel.Error, `There is already a '${wudFound.name}' wake up date event.`);
+            this.#log(LogLevel.Error, `There is already a '${wudFound.name}' wake up date event.`);
             return;
         }
         wudEventToAdd.setSubAddedCall( this.subAdded.bind(this) );
-        this.wudMap.set(wudEventToAdd);
-        this.log(LogLevel.Info, `Wake up date event add: '${wudEventToAdd.name}'`);
+        this.#wudMap.set(wudEventToAdd);
+        this.#log(LogLevel.Info, `Wake up date event add: '${wudEventToAdd.name}'`);
     }
 
     /**
@@ -117,31 +121,31 @@ export class WakeupDateController {
      * @param args arguments for the sub
      * @param wakeupDate date to wake up the sub
      * @param nbCallBeforeRemove indicate the number of call before remove the sub, -1 to call forever
-     * @param nextCall indicate when recall the sub if it is not remove
+     * @param #nextCall indicate when recall the sub if it is not remove
      */
     subToWakeupDateEvent<TArgs>(eventName: string, subName: string, args: TArgs, wakeupDate: number, nbCallBeforeRemove?: number, nextCall?: number) {
-        let wudEvent = this.wudMap.get(eventName);
+        let wudEvent = this.#wudMap.get(eventName);
         if (wudEvent == undefined) {
-            this.log(LogLevel.Error, `No wake up date event '${eventName}' found, to sub ${subName}`);
+            this.#log(LogLevel.Error, `No wake up date event '${eventName}' found, to sub ${subName}`);
             return;
         }
         if(wudEvent.private) {
-            this.log(LogLevel.Error, `Wake up date event '${eventName}' is private. You can not add sub by the controller`);
+            this.#log(LogLevel.Error, `Wake up date event '${eventName}' is private. You can not add sub by the controller`);
             return;
         }
         wudEvent.addSub(subName, args, wakeupDate, nbCallBeforeRemove, nextCall);
     }
 
     private updateNextCall() {
-        if (this.wudMap.size == 0) {
-            this.nextCall = undefined;
+        if (this.#wudMap.size == 0) {
+            this.#nextCall = undefined;
             return;
         }
-        this.nextCall = this.wudMap.getFirst().nextCall;
-        this.wudMap.forEach(wud => {
+        this.#nextCall = this.#wudMap.getFirst().nextCall;
+        this.#wudMap.forEach(wud => {
             if (wud.nextCall != undefined &&
-                (this.nextCall == undefined || wud.nextCall < this.nextCall)) {
-                this.nextCall = wud.nextCall;
+                (this.#nextCall == undefined || wud.nextCall < this.#nextCall)) {
+                this.#nextCall = wud.nextCall;
             }
         });
     }
@@ -149,21 +153,21 @@ export class WakeupDateController {
     private startTimeout() {
         this.updateNextCall();
 
-        if (this.nextCall == undefined) {
-            this.log(LogLevel.Info, 'No event to wait');
+        if (this.#nextCall == undefined) {
+            this.#log(LogLevel.Info, 'No event to wait');
             return;
         }
 
-        if (this.timeoutDateList.length!=0 &&
-            this.nextCall >= this.timeoutDateList[0] )
+        if (this.#timeoutDateList.length!=0 &&
+            this.#nextCall >= this.#timeoutDateList[0] )
         {
             // there is already a timeout for the next event
-            this.log(LogLevel.Info, 'Already a timeout for the next event');
+            this.#log(LogLevel.Info, 'Already a timeout for the next event');
             return;
         }
 
         let now = Date.now();
-        let nextWait = this.nextCall - now;
+        let nextWait = this.#nextCall - now;
         if (nextWait < 0) {
             // there is event to call
             this.testAndCall();
@@ -171,11 +175,11 @@ export class WakeupDateController {
             return;
         }
 
-        let nextWakeup = this.nextCall;
-        if (nextWait > this.maxWait) {
+        let nextWakeup = this.#nextCall;
+        if (nextWait > this.#maxWait) {
             // wait no more than the maximum
-            nextWait = this.maxWait;
-            nextWakeup = now + this.maxWait;
+            nextWait = this.#maxWait;
+            nextWakeup = now + this.#maxWait;
         }
 
         // Start the timeout
@@ -183,8 +187,8 @@ export class WakeupDateController {
             this.testAndCall();
 
             // remove the timeout from the list
-            this.timeoutDateList.splice(0, 1);
-            this.propNbTimeout.value += -1;
+            this.#timeoutDateList.splice(0, 1);
+            this.#propNbTimeout.value += -1;
             // restart the timeout
             this.startTimeout();
         }, nextWait);
@@ -197,12 +201,12 @@ export class WakeupDateController {
      * Test and call every sub from every events
      */
     private testAndCall() {
-        this.log(LogLevel.Info, 'Wakeup on date Events Call');
+        this.#log(LogLevel.Info, 'Wakeup on date Events Call');
 
         let nbSubCalled: number;
         let totalSubCalled = 0;
         let hasToSave = false;
-        this.wudMap.forEach(wud => {
+        this.#wudMap.forEach(wud => {
             nbSubCalled = wud.testAndCall();
             if(wud.saved && nbSubCalled>0) {
                 hasToSave = true;
@@ -210,10 +214,10 @@ export class WakeupDateController {
             totalSubCalled += nbSubCalled;
         });
         if(totalSubCalled!=0) {
-            this.propNbSubEvent.value -= totalSubCalled;
+            this.#propNbSubEvent.value -= totalSubCalled;
         }
         if(hasToSave) {
-            this.saveFct();
+            this.#saveFct();
         }
     }
 
@@ -222,43 +226,43 @@ export class WakeupDateController {
      * @param timeoutWakeupDate timeout wakeup date
      */
     private addTimeoutStarted(timeoutWakeupDate: number) {
-        this.propNbTimeout.value += 1;
-        for (let i = 0; i < this.timeoutDateList.length; i++) {
-            if (timeoutWakeupDate < this.timeoutDateList[i]) {
-                this.timeoutDateList.splice(i, 0, timeoutWakeupDate);
+        this.#propNbTimeout.value += 1;
+        for (let i = 0; i < this.#timeoutDateList.length; i++) {
+            if (timeoutWakeupDate < this.#timeoutDateList[i]) {
+                this.#timeoutDateList.splice(i, 0, timeoutWakeupDate);
                 return;
             }
         }
-        this.timeoutDateList.push(timeoutWakeupDate);
+        this.#timeoutDateList.push(timeoutWakeupDate);
     }
 
     /**
      * Method call after a sub add to an event
      */
     private subAdded(eventName: string = 'unknow', saveFile: boolean = true) {
-        this.log(LogLevel.Info, `New sub to the Wake up date event ${eventName}`);
-        this.propNbSubEvent.value += 1;
+        this.#log(LogLevel.Info, `New sub to the Wake up date event ${eventName}`);
+        this.#propNbSubEvent.value += 1;
         this.startTimeout();
         if(saveFile) {
-            this.saveFct();
+            this.#saveFct();
         }
     }
 
     /** Load And Save **/
     load(dataLoaded: WakeupDateJson) {
-        this.propNbSubEvent.value = 0;
+        this.#propNbSubEvent.value = 0;
         dataLoaded.events.forEach(wudData => {
             let wudEvent = new WakeupDateEvent(wudData.name, wudData.ownerName);
             wudEvent.load(wudData);
-            this.wudMap.set(wudEvent);
-            this.propNbSubEvent.value += wudEvent.nbSub;
+            this.#wudMap.set(wudEvent);
+            this.#propNbSubEvent.value += wudEvent.nbSub;
         });
-        this.log(LogLevel.Info, `${this.wudMap.size} wakeup date event loaded, with ${this.propNbSubEvent.value} sub`);
+        this.#log(LogLevel.Info, `${this.#wudMap.size} wakeup date event loaded, with ${this.#propNbSubEvent.value} sub`);
         // events not ready here
     }
     toJson(): WakeupDateJson {
         return {
-            events: this.wudMap.toJson(wud => wud.saved)
+            events: this.#wudMap.toJson(wud => wud.saved)
         }
     }
 
@@ -269,8 +273,8 @@ export class WakeupDateController {
      * @returns the information about the events
      */
     getInfoEvents(): string {
-        let strReturn = `### ${this.wudMap.size} wakeup on date Events for ${this.nbSub} current sub\n`;
-        this.wudMap.forEach(wud => strReturn += wud.getInfoEvent());
+        let strReturn = `### ${this.#wudMap.size} wakeup on date Events for ${this.nbSub} current sub\n`;
+        this.#wudMap.forEach(wud => strReturn += wud.getInfoEvent());
         return strReturn;
     }
     
@@ -278,7 +282,7 @@ export class WakeupDateController {
     infoComponent(componentName: string): string {
         let eventListStr = '';
         let nbEvent = 0;
-        this.wudMap.forEach(wud => {
+        this.#wudMap.forEach(wud => {
             if(wud.ownerName == componentName) {
                 nbEvent += 1;
                 eventListStr += `  - ${wud.nbSub} sub to ${wud.name} event\n`;

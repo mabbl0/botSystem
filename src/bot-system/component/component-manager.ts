@@ -11,7 +11,7 @@ import { pickRandom } from '../../tools/random';
 import { CommunicationBase } from '../communication/comm-type';
 import { Message } from '../communication/message';
 
-
+/** @internal */
 export class ComponentManager extends UnitComponent {
     private componentArr: Array<Component>
     private bsComponentArr: Array<UnitComponent>

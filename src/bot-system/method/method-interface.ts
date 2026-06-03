@@ -2,27 +2,42 @@ import { ComponentType } from "../component/component-type"
 import { MethodOption, MthAddPrototype, MthGetPrototype, MthInitPrototype } from "./method-type"
 
 export class MethodInterface {
-    private componentName: string
-    private ptrType: {value: ComponentType}
+    #componentName: string
+    #ptrType: {value: ComponentType}
 
-    private mthAddMethod: MthAddPrototype
-    private mthGetMethod: MthGetPrototype
+    #mthAddMethod: MthAddPrototype
+    #mthGetMethod: MthGetPrototype
 
-    // Initiate the method interface with component name
+    /**
+     * Initiate the method interface with component name
+     * @param componentName 
+     * @param ptrType 
+     * @param mthAddMethod 
+     * @param mthGetMethod 
+     * @param mthInitNewComponent 
+     * @internal
+     */
     constructor(componentName: string, ptrType: {value: ComponentType}, mthAddMethod: MthAddPrototype, mthGetMethod: MthGetPrototype, mthInitNewComponent: MthInitPrototype){
-        this.componentName = componentName;
-        this.ptrType = ptrType;
+        this.#componentName = componentName;
+        this.#ptrType = ptrType;
         this.initInterface(mthAddMethod, mthGetMethod, mthInitNewComponent);
     }
 
-    // initiate the interface (in case if it can not be init in the constructor)
+    
+    /**
+     * initiate the interface (in case if it can not be init in the constructor)
+     * @param mthAddMethod 
+     * @param mthGetMethod 
+     * @param mthInitNewComponent 
+     * @internal
+     */
     initInterface(mthAddMethod: MthAddPrototype, mthGetMethod: MthGetPrototype, mthInitNewComponent: MthInitPrototype){
-        if(this.mthAddMethod==undefined && this.mthGetMethod==undefined){ // only once
-            this.mthAddMethod = mthAddMethod;
-            this.mthGetMethod = mthGetMethod;
+        if(this.#mthAddMethod==undefined && this.#mthGetMethod==undefined){ // only once
+            this.#mthAddMethod = mthAddMethod;
+            this.#mthGetMethod = mthGetMethod;
             
             if(mthInitNewComponent){ // can be undefined for the first unit
-                mthInitNewComponent(this.componentName);
+                mthInitNewComponent(this.#componentName);
             }
         }
     }
@@ -34,8 +49,8 @@ export class MethodInterface {
      * @param mthOption method options
      */
     addMethod(mthName: string, mth: Function, mthOption?: MethodOption){
-        if(this.mthAddMethod){
-            this.mthAddMethod(this.componentName, mthName, mth, mthOption);
+        if(this.#mthAddMethod){
+            this.#mthAddMethod(this.#componentName, mthName, mth, mthOption);
         }
     }
 
@@ -46,8 +61,8 @@ export class MethodInterface {
      * @returns method found
      */
     getMethod<FctPrototype>(componentName: string, mthName: string): FctPrototype{
-        if(this.mthGetMethod){
-            return this.mthGetMethod<FctPrototype>(this.componentName, this.ptrType.value, componentName, mthName);
+        if(this.#mthGetMethod){
+            return this.#mthGetMethod<FctPrototype>(this.#componentName, this.#ptrType.value, componentName, mthName);
         }
         return undefined;
     }

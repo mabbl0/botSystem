@@ -5,8 +5,11 @@ import { SaveInterface } from './save-interface'
 import { UnitComponent } from './unit-component'
 
 export abstract class Component extends UnitComponent {
+    /** @internal */
     conf: ComponentConf
+    /** @internal */
     extensionList: Array<Extension<Component>>
+    /** @internal */
     protected saveInterface: SaveInterface
 
     /**
@@ -34,6 +37,7 @@ export abstract class Component extends UnitComponent {
 
     /**
      * Load the component configuration from its configuration file
+     * @internal
      */
     private loadConf(){
         const confFileName = this.name.replace(/(?<!^)(?=[A-Z])/g,'-').toLowerCase() + '-conf.json';
@@ -51,8 +55,11 @@ export abstract class Component extends UnitComponent {
             // component can to not have conf file
         }
     }
-
-    // indicate default value for the component configuration
+    
+    /**
+     * indicate default value for the component configuration
+     * @param defaultConf default configuration for the component
+     */
     defaultConf<Conf extends ComponentConf>(defaultConf: Conf) {
         const keys = Object.keys(defaultConf) as (keyof Conf)[];
         let conf = this.conf as Conf;

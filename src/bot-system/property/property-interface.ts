@@ -2,27 +2,37 @@ import { Prop, PropAccess, PropOption } from "./property-type";
 import { MethodInterface } from "../method/method-interface";
 
 export class PropInterface {
-    private componentName: string
-    private mthInterface: MethodInterface
-    private mthAddProp: <PropType>(ownerName: string, prop: Prop<PropType>) => void
-    private mthGetProp: <PropType>(ownerName: string, componentName: string, propName: string) => PropAccess<PropType>
+    #componentName: string
+    #mthInterface: MethodInterface
+    #mthAddProp: <PropType>(ownerName: string, prop: Prop<PropType>) => void
+    #mthGetProp: <PropType>(ownerName: string, componentName: string, propName: string) => PropAccess<PropType>
 
-    // Initiate the property interface with component name
+    
+    /**
+     * Initiate the property interface with component name
+     * @param componentName 
+     * @param mthInterface 
+     * @internal
+     */
     constructor(componentName: string, mthInterface: MethodInterface){
-        this.componentName = componentName;
-        this.mthInterface = mthInterface;
+        this.#componentName = componentName;
+        this.#mthInterface = mthInterface;
 
         this.initInterface();
     }
     
-    // initiate the interface (in case if it can not be init in the constructor)
+    
+    /**
+     * initiate the interface (in case if it can not be init in the constructor)
+     * @internal
+     */
     initInterface(){
-        let mthInitNewComponentProps = this.mthInterface.getMethod<(componentName: string) => void>("PropertyManager","initNewComponentProps");
-        this.mthAddProp = this.mthInterface.getMethod("PropertyManager","addProp");
-        this.mthGetProp = this.mthInterface.getMethod("PropertyManager","getProp");
+        let mthInitNewComponentProps = this.#mthInterface.getMethod<(componentName: string) => void>("PropertyManager","initNewComponentProps");
+        this.#mthAddProp = this.#mthInterface.getMethod("PropertyManager","addProp");
+        this.#mthGetProp = this.#mthInterface.getMethod("PropertyManager","getProp");
         
         if(mthInitNewComponentProps){ // can be undefined for the first unit
-            mthInitNewComponentProps(this.componentName);
+            mthInitNewComponentProps(this.#componentName);
         }
     }
 
@@ -31,8 +41,8 @@ export class PropInterface {
      * @param prop the property to add
      */
     addProp<PropType>(prop: Prop<PropType>){
-        if(this.mthAddProp){ // can be undefined for the first unit
-            this.mthAddProp<PropType>(this.componentName, prop);
+        if(this.#mthAddProp){ // can be undefined for the first unit
+            this.#mthAddProp<PropType>(this.#componentName, prop);
         }
     }
 
@@ -70,13 +80,13 @@ export class PropInterface {
 
     /**
      * Get a prop from an other component
-     * @param componentName component name to found
+     * @param #componentName component name to found
      * @param propName prop name to found
      * @returns prop found
      */
     getProp<PropType>(componentName: string, propName: string): PropAccess<PropType>{
-        if(this.mthGetProp){ // can be undefined for the first unit
-            return this.mthGetProp<PropType>(this.componentName, componentName, propName);
+        if(this.#mthGetProp){ // can be undefined for the first unit
+            return this.#mthGetProp<PropType>(this.#componentName, componentName, propName);
         }
         return undefined;
     }

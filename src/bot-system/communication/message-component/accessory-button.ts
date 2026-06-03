@@ -2,36 +2,37 @@ import { Button, ButtonBase } from "./button";
 import { MessageComponentBase, MsgComponentAdapterApi, MsgComponentDisplayType, MsgComponentType } from "./message-component-type";
 
 export class AccessoryButton extends MessageComponentBase {
-    private _button: Button
-    private _text: string
-    private adapterConstruct: new () => MsgComponentAdapterApi
+    #button: Button
+    #text: string
+    #adapterConstruct: new () => MsgComponentAdapterApi
 
+    /** @internal */
     constructor(msgcOwner: MessageComponentBase, text: string, button: ButtonBase, adapterConstruct?: new () => MsgComponentAdapterApi, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message){
         super(msgcOwner, displayType, MsgComponentType.AccessoryButton);
-        this.adapterConstruct = adapterConstruct;
-        this._text = text;
+        this.#adapterConstruct = adapterConstruct;
+        this.#text = text;
 
-        this._button = new Button(this, button);
-        this._button.adapter = new this.adapterConstruct();
-        this.interactiveComponents = [ this._button ];
+        this.#button = new Button(this, button);
+        this.#button.adapter = new this.#adapterConstruct();
+        this.interactiveComponents = [ this.#button ];
     }
 
     get text() {
         this.modified = true;
-        return this._text;
+        return this.#text;
     }
     set text(t: string) {
         this.modified = true;
-        this._text = t;
+        this.#text = t;
     }
     get button() {
         this.modified = true;
-        return this._button;
+        return this.#button;
     }
     setButton(button: ButtonBase) {
-        this._button = new Button(this, button);
-        this._button.adapter = new this.adapterConstruct();
-        this.interactiveComponents = [ this._button ];
+        this.#button = new Button(this, button);
+        this.#button.adapter = new this.#adapterConstruct();
+        this.interactiveComponents = [ this.#button ];
         this.modified = true;
     }
     
@@ -52,7 +53,7 @@ export class AccessoryButton extends MessageComponentBase {
      */
     override destroy() {
         super.destroy();
-        this._button.destroy();
-        this._button = undefined;
+        this.#button.destroy();
+        this.#button = undefined;
     }
 }

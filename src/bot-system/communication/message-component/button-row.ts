@@ -2,26 +2,27 @@ import { Button, ButtonBase } from "./button";
 import { MessageComponentBase, MsgComponentAdapterApi, MsgComponentDisplayType, MsgComponentType } from "./message-component-type";
 
 export class ButtonRow extends MessageComponentBase {
-    private _buttons: Button[]
-    private adapterConstruct: new () => MsgComponentAdapterApi
+    #buttons: Button[]
+    #adapterConstruct: new () => MsgComponentAdapterApi
 
+    /** @internal */
     constructor(msgcOwner: MessageComponentBase, buttons?: ButtonBase[], adapterConstruct?: new () => MsgComponentAdapterApi, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
         super(msgcOwner, displayType, MsgComponentType.ButtonRow);
-        this.adapterConstruct = adapterConstruct;
+        this.#adapterConstruct = adapterConstruct;
 
-        this._buttons = [];
+        this.#buttons = [];
         buttons?.forEach(b => {
             let newButton = new Button(this, b);
-            newButton.adapter = new this.adapterConstruct();
-            this._buttons.push(newButton);
+            newButton.adapter = new this.#adapterConstruct();
+            this.#buttons.push(newButton);
         });
 
-        this.interactiveComponents = this._buttons;
+        this.interactiveComponents = this.#buttons;
     }
 
     get buttons() {
         this.modified = true;
-        return this._buttons;
+        return this.#buttons;
     }
     
     /**
@@ -32,7 +33,7 @@ export class ButtonRow extends MessageComponentBase {
             return this.msgcOwner.getUniqueId();
         }
         else {
-            return this._buttons.length.toString();
+            return this.#buttons.length.toString();
         }
     }
 
@@ -56,10 +57,10 @@ export class ButtonRow extends MessageComponentBase {
      */
     override destroy() {
         super.destroy();
-        this._buttons.forEach(b => {
+        this.#buttons.forEach(b => {
             b.destroy();
         });
-        this._buttons = undefined;
+        this.#buttons = undefined;
         this.modified = true;
     }
 
@@ -69,8 +70,8 @@ export class ButtonRow extends MessageComponentBase {
      */
     addButton(button: ButtonBase) {
         let newButton = new Button(this, button);
-        newButton.adapter = new this.adapterConstruct();
-        this._buttons.push(newButton);
+        newButton.adapter = new this.#adapterConstruct();
+        this.#buttons.push(newButton);
         this.modified = true;
     }
 }

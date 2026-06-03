@@ -3,6 +3,7 @@ import { MapName } from "../../tools/collection/map";
 import { Prop, PropAccess, PropMapComponent } from '../property/property-type'
 import { Message } from "../communication/message";
 
+/** @internal */
 export class PropertyManager extends UnitComponent {
     private propsMap: MapName<PropMapComponent>
 

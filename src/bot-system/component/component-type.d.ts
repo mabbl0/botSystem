@@ -7,6 +7,7 @@ export interface ComponentConf {
     saveFileVersion?: number
 }
 
+/** @internal */
 export const enum ComponentType {
     BotSystem,
     Component,

@@ -8,6 +8,7 @@ import { Channel } from "../communication/channel";
 
 // TODO: add all interaction with the interface api
 
+/** @internal */
 export class InterfaceApiManager extends UnitComponent {
     private _interfaceAPI: InterfaceAPI
 

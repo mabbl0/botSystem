@@ -7,6 +7,7 @@ import { CommunicationAction, MsgToSend, CommReturn, thenLogError } from "../bot
 import { MsgComponentAdapter } from "./util/message-component-adapter";
 import { Message, MessageCore } from "../bot-system/communication/message";
 
+/** @internal */
 export class AdaptCommDiscord implements AdaptCommAPI {
     private discordApi: DiscordInterface
     private countButtonShowModal: number

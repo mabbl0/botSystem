@@ -24,33 +24,33 @@ export interface WakeupDateOption {
 export class WakeupDateEvent<TArgs> {
     readonly name: string
     ownerName: string
-    private fct: (args: TArgs) => void
-    private subAddedCall: (eventName: string, saveFile: boolean)=>void
-    private subList: Array<WakeupDateSub<TArgs>> // sub list sort in to the next sub to wake up to the last
-    private option: WakeupDateOption
-    private nbSuccessiveOverDate: number // number of successive sub add with an over date
+    #fct: (args: TArgs) => void
+    #subAddedCall: (eventName: string, saveFile: boolean)=>void
+    #subList: Array<WakeupDateSub<TArgs>> // sub list sort in to the next sub to wake up to the last
+    #option: WakeupDateOption
+    #nbSuccessiveOverDate: number // number of successive sub add with an over date
 
     /**
      * Event where sub are call at specific time
      * @param name event name
-     * @param fct function to call
+     * @param #fct function to call
      */
     constructor(name: string, ownerName: string, fct?: (args: TArgs) => void, option: WakeupDateOption = {}) {
         this.name = name;
         this.ownerName = ownerName;
-        this.fct = fct;
-        this.subList = [];
-        this.nbSuccessiveOverDate = 0;
+        this.#fct = fct;
+        this.#subList = [];
+        this.#nbSuccessiveOverDate = 0;
 
-        this.option = option;
-        if(this.option.private == undefined) {
-            this.option.private = false;
+        this.#option = option;
+        if(this.#option.private == undefined) {
+            this.#option.private = false;
         }
-        if(this.option.minBeforeSubRecall == undefined) {
-            this.option.minBeforeSubRecall = 60_000; // 1min minimum to recall a same sub
+        if(this.#option.minBeforeSubRecall == undefined) {
+            this.#option.minBeforeSubRecall = 60_000; // 1min minimum to recall a same sub
         }
-        if(this.option.saved == undefined) {
-            this.option.saved = true;
+        if(this.#option.saved == undefined) {
+            this.#option.saved = true;
         }
     }
 
@@ -58,67 +58,67 @@ export class WakeupDateEvent<TArgs> {
      * Return the number of sub to the event
      */
     get nbSub(): number {
-        return this.subList.length;
+        return this.#subList.length;
     }
 
     /**
      * Indicate if the wake up date event is ready
      */
     get ready(): boolean {
-        return this.fct != undefined
+        return this.#fct != undefined
     }
 
     /**
      * Return the date of the next sub called. Undefined if no sub
      */
     get nextCall(): number {
-        if(this.subList.length==0 || this.fct==undefined) {
+        if(this.#subList.length==0 || this.#fct==undefined) {
             return undefined;
         }
-        return this.subList[0].wakeupDate;
+        return this.#subList[0].wakeupDate;
     }
 
     /**
      * Indicate if the event is private or not
      */
     get private(): boolean {
-        return this.option.private;
+        return this.#option.private;
     }
 
     /**
      * Indicate if the event should be saved in data file
      */
     get saved(): boolean {
-        return this.option.saved;
+        return this.#option.saved;
     }
 
     /**
      * set the called function if function not already set
-     * @param fct function to call
+     * @param #fct function to call
      */
     setFct(fct: (args: TArgs) => void) {
-        if (this.fct == undefined) { // only once
-            this.fct = fct;
+        if (this.#fct == undefined) { // only once
+            this.#fct = fct;
         }
     }
 
     /**
      * set the function call after a seb added, for the controller
-     * @param fct function call after a sub added
+     * @param #fct function call after a sub added
      */
     setSubAddedCall( fct: (eventName: string, saveFile: boolean) => void ) {
-        if (this.subAddedCall == undefined) { // only once
-            this.subAddedCall = fct;
+        if (this.#subAddedCall == undefined) { // only once
+            this.#subAddedCall = fct;
         }
     }
 
     /**
-     * Copy the function and option of an other similaire event
+     * Copy the function and #option of an other similaire event
      * @param wudEventToCopy event to copy
      */
     copyFctOpt(wudEventToCopy: WakeupDateEvent<TArgs>) {
-        this.setFct( wudEventToCopy.fct );
-        this.option = wudEventToCopy.option;
+        this.setFct( wudEventToCopy.#fct );
+        this.#option = wudEventToCopy.#option;
     }
 
     /**
@@ -126,11 +126,11 @@ export class WakeupDateEvent<TArgs> {
      * @param wudEventToCopy event to copy
      */
     copySub(wudEventToCopy: WakeupDateEvent<TArgs>) {
-        if(this.subList.length == 0) {
-            this.subList = wudEventToCopy.subList.slice();
+        if(this.#subList.length == 0) {
+            this.#subList = wudEventToCopy.#subList.slice();
         }
         else {
-            wudEventToCopy.subList.forEach( sub => {
+            wudEventToCopy.#subList.forEach( sub => {
                 this.addSubInSortList(sub);
             });
         }
@@ -149,26 +149,26 @@ export class WakeupDateEvent<TArgs> {
         let now = Date.now();
         if(now > wakeupDate) {
             // sub add with an over date
-            this.nbSuccessiveOverDate += 1;
-            if(this.nbSuccessiveOverDate > 16) {
+            this.#nbSuccessiveOverDate += 1;
+            if(this.#nbSuccessiveOverDate > 16) {
                 // risk of infinite loop
                 return;
             }
-            else if(this.nbSuccessiveOverDate > 4) {
+            else if(this.#nbSuccessiveOverDate > 4) {
                 // add with an over time to not overload the event call
                 wakeupDate = now + 500; // +500 ms
             }
-            else if(this.fct!=undefined){
-                this.fct(args);
+            else if(this.#fct!=undefined){
+                this.#fct(args);
                 return;
             }
         }
         else {
-            this.nbSuccessiveOverDate = 0;
+            this.#nbSuccessiveOverDate = 0;
         }
 
-        if(nextCall != undefined && nextCall < this.option.minBeforeSubRecall) { // minimum before call
-            nextCall = this.option.minBeforeSubRecall;
+        if(nextCall != undefined && nextCall < this.#option.minBeforeSubRecall) { // minimum before call
+            nextCall = this.#option.minBeforeSubRecall;
         }
 
         this.addSubInSortList({
@@ -179,25 +179,26 @@ export class WakeupDateEvent<TArgs> {
             nextCall: nextCall
         });
         
-        if(this.subAddedCall!=undefined) {
-            this.subAddedCall(this.name, this.option.saved);
+        if(this.#subAddedCall!=undefined) {
+            this.#subAddedCall(this.name, this.#option.saved);
         }
     }
 
     /**
      * Add an sub event in the sorted list
      * @param subEventToAdd the sub event to add in the sorted list
+     * @internal
      */
     private addSubInSortList(subEventToAdd: WakeupDateSub<TArgs>) {
         // add to the great place, to sort the list
-        for (let i = 0; i < this.subList.length; i++) {
-            if (subEventToAdd.wakeupDate < this.subList[i].wakeupDate) {
-                this.subList.splice(i, 0, subEventToAdd);
+        for (let i = 0; i < this.#subList.length; i++) {
+            if (subEventToAdd.wakeupDate < this.#subList[i].wakeupDate) {
+                this.#subList.splice(i, 0, subEventToAdd);
                 return;
             }
         }
         // add to the end
-        this.subList.push(subEventToAdd);
+        this.#subList.push(subEventToAdd);
     }
 
     /**
@@ -206,21 +207,21 @@ export class WakeupDateEvent<TArgs> {
      * @returns the number of sub remove
      */
     testAndCall(): number {
-        if (this.fct == undefined) {
+        if (this.#fct == undefined) {
             return 0;
         }
         
         let now = Date.now();
         let nbRemoved = 0;
         let subEvent: WakeupDateSub<TArgs>;
-        for (let i = 0; i < this.subList.length; i++) {
-            subEvent = this.subList[i];
+        for (let i = 0; i < this.#subList.length; i++) {
+            subEvent = this.#subList[i];
             if (now > subEvent.wakeupDate) {
                 // remove
-                this.subList.splice(i, 1);
+                this.#subList.splice(i, 1);
                 i += -1;
 
-                this.fct(subEvent.args);
+                this.#fct(subEvent.args);
                 
                 // replace again in the sort list to be recall, if needed
                 if(subEvent.nbCallBeforeRemove==undefined || subEvent.nextCall==undefined ||
@@ -253,7 +254,7 @@ export class WakeupDateEvent<TArgs> {
         return {
             name: this.name,
             ownerName: this.ownerName,
-            subList: this.subList
+            subList: this.#subList
         };
     }
 
@@ -271,7 +272,7 @@ export class WakeupDateEvent<TArgs> {
         let strReturn = `- ${this.name} wud event - ${this.nbSub} sub:\n`;
         let nbCallLeftStr: string
         let wakeupDateStr: string
-        this.subList.forEach(sub => {
+        this.#subList.forEach(sub => {
             if(sub.nbCallBeforeRemove > 1) {
                 nbCallLeftStr = `${sub.nbCallBeforeRemove?.toString()} left / `;
             }

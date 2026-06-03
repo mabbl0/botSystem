@@ -10,31 +10,32 @@ interface ComponentSave {
 }
 
 export class SaveInterface {
-    private componentName: string
-    private canBeSave: boolean
-    private pathFile: string
-    private _lastDateSave: number
-    private saveFileVersion: number
+    #componentName: string
+    #canBeSave: boolean
+    #pathFile: string
+    #lastDateSave: number
+    #saveFileVersion: number
 
-    private log: (logLevel: number, txt: string) => void
+    #log: (logLevel: number, txt: string) => void
 
+    /** @internal */
     constructor(logFct: (logLevel: number, txt: string) => void, componentName: string, propInterface: PropInterface, pathFile: string, saveFileVersion: number) {
-        this.log = logFct;
-        this.componentName = componentName;
-        this.canBeSave = isJsonExtension(pathFile) && saveFileVersion>0;
-        if(this.canBeSave) {
-            this.pathFile = propInterface.getProp<string>("BotSystem", "saveDirPath")?.value + pathFile;
-            this.saveFileVersion = saveFileVersion;
-            this._lastDateSave = 0;
+        this.#log = logFct;
+        this.#componentName = componentName;
+        this.#canBeSave = isJsonExtension(pathFile) && saveFileVersion>0;
+        if(this.#canBeSave) {
+            this.#pathFile = propInterface.getProp<string>("BotSystem", "saveDirPath")?.value + pathFile;
+            this.#saveFileVersion = saveFileVersion;
+            this.#lastDateSave = 0;
         }
     }
 
     get lastDateSave(): number {
-        return this._lastDateSave;
+        return this.#lastDateSave;
     }
 
     get fileName(): string {
-        return this.pathFile;
+        return this.#pathFile;
     }
 
     /**
@@ -43,25 +44,25 @@ export class SaveInterface {
      * @returns the data loaded
      */
     load<DataType>(defaultData: DataType): DataType {
-        if (!this.canBeSave) {
-            this.log(LogLevel.Error, `Component ${this.componentName} is not authorized to load. Check component configuration file.`);
+        if (!this.#canBeSave) {
+            this.#log(LogLevel.Error, `Component ${this.#componentName} is not authorized to load. Check component configuration file.`);
             return defaultData;
         }
 
-        if (!existFile(this.pathFile)) {
-            this.log(LogLevel.Error, `Component ${this.componentName} try to load an not existing file: ${this.pathFile}`);
+        if (!existFile(this.#pathFile)) {
+            this.#log(LogLevel.Error, `Component ${this.#componentName} try to load an not existing file: ${this.#pathFile}`);
             return defaultData;
         }
 
-        let dataLoaded = loadData<ComponentSave & { data: DataType }>(this.pathFile);
-        if (dataLoaded.componentName !== this.componentName) {
-            this.log(LogLevel.Error, `Component ${this.componentName} try to load a file to an other component: ${dataLoaded.componentName} - ${this.pathFile}`);
+        let dataLoaded = loadData<ComponentSave & { data: DataType }>(this.#pathFile);
+        if (dataLoaded.componentName !== this.#componentName) {
+            this.#log(LogLevel.Error, `Component ${this.#componentName} try to load a file to an other component: ${dataLoaded.componentName} - ${this.#pathFile}`);
             return defaultData;
         }
         // TODO: decrypt in encrypt option case 
 
-        if (dataLoaded.saveFileVersion != this.saveFileVersion) {
-            this.log(LogLevel.Warning, `Component ${this.componentName} load its file with wrong version. Expected: '${this.saveFileVersion}' - File: '${dataLoaded.saveFileVersion}'`);
+        if (dataLoaded.saveFileVersion != this.#saveFileVersion) {
+            this.#log(LogLevel.Warning, `Component ${this.#componentName} load its file with wrong version. Expected: '${this.#saveFileVersion}' - File: '${dataLoaded.saveFileVersion}'`);
             // complete the loaded data with the expected data
             const keysExpected = Object.keys(defaultData) as (keyof DataType)[];
             keysExpected.forEach(kExpectedStr => {
@@ -71,9 +72,9 @@ export class SaveInterface {
             });
         }
 
-        this._lastDateSave = dataLoaded.lastDateSave;
+        this.#lastDateSave = dataLoaded.lastDateSave;
 
-        this.log(LogLevel.Info, `Component ${this.componentName} load file ${this.pathFile}`);
+        this.#log(LogLevel.Info, `Component ${this.#componentName} load file ${this.#pathFile}`);
         return dataLoaded.data;
     }
 
@@ -83,20 +84,20 @@ export class SaveInterface {
      * @param data data to save
      */
     save<DataType>(data: DataType): void {
-        if (!this.canBeSave) {
-            this.log(LogLevel.Error, `Component ${this.componentName} is not authorized to save. Check component configuration file.`);
+        if (!this.#canBeSave) {
+            this.#log(LogLevel.Error, `Component ${this.#componentName} is not authorized to save. Check component configuration file.`);
             return;
         }
 
-        this._lastDateSave = Date.now();
+        this.#lastDateSave = Date.now();
         let dataToSave: ComponentSave & { data: DataType } = {
-            componentName: this.componentName,
-            lastDateSave: this._lastDateSave,
-            saveFileVersion: this.saveFileVersion,
+            componentName: this.#componentName,
+            lastDateSave: this.#lastDateSave,
+            saveFileVersion: this.#saveFileVersion,
             data: data
         }
         // TODO: encrypt option
-        saveData(this.pathFile, dataToSave);
-        this.log(LogLevel.Info, `Component ${this.componentName} save file ${this.pathFile}`);
+        saveData(this.#pathFile, dataToSave);
+        this.#log(LogLevel.Info, `Component ${this.#componentName} save file ${this.#pathFile}`);
     }
 }

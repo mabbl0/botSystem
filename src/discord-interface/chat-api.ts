@@ -3,10 +3,11 @@ import { ChatAPI } from "../bot-system/interface-api/interface-api-type";
 import { MapName, MapNameId } from "../tools/collection/map";
 import { User } from "../bot-system/user/user";
 import { DiscordInterface } from "./discord-interface-api";
-import { VoiceChannel } from "../bot-system/communication/voice/voice-type";
+import { VoiceChannel } from "../bot-system/communication/voice/voice-channel";
 import { ChannelCore } from "../bot-system/communication/channel";
 import { Role } from "../bot-system/user/role";
 
+/** @internal */
 export class ChatDiscord implements ChatAPI {
     private discordApi: DiscordInterface
     users: MapNameId<User>

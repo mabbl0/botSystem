@@ -3,6 +3,7 @@ interface ToJsonBase {
 }
 
 abstract class MapStr<ValueType> {
+    /** @internal */
     protected map: Map<String, ValueType>
 
     constructor(){
@@ -131,6 +132,7 @@ interface NameIdInterface {
     id: string
 }
 export class MapNameId<ValueType extends NameIdInterface> extends MapStr<ValueType>{
+    /** @internal */
     private mapName: Map<String, String> // Map< Name , Id >
 
     constructor(){
@@ -170,7 +172,9 @@ export class MapNameId<ValueType extends NameIdInterface> extends MapStr<ValueTy
 /*** Map 2 keys + value ***/
 
 export class Map2K<Key1Type, Key2Type, ValueType> {
+    /** @internal */
     private mapK1K2: Map<Key1Type, Key2Type>
+    /** @internal */
     private mapK2V: Map<Key2Type, ValueType>
 
     constructor(){

@@ -45,6 +45,7 @@ export interface Message extends CommunicationBase<Message>, HasMention {
 }
 
 
+/** @internal */
 export class MessageCore implements Message {
     msgApi: any
     _author: User
@@ -254,8 +255,9 @@ export class MessageCore implements Message {
 }
 
 
-
-// Message which can be recycled tanks to a recycler
+/** Message which can be recycled tanks to a recycler
+ * @internal
+ */
 export class MessageRecycled extends MessageCore implements RecycledItem<MessageRecycled> {
     used: boolean
     trashBackFct: (item: MessageRecycled) => void

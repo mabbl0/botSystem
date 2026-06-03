@@ -5,63 +5,88 @@ import { WakeupDateEvent, WakeupDateOption } from "./wakeup-date-event"
 import { Message } from "../communication/message"
 
 export class EventInterface {
-    private componentName: string
-    private mthInterface: MethodInterface
+    #componentName: string
+    #mthInterface: MethodInterface
 
-    private mthSubBootConnectedEvent: (componentName: String, fct: () => void) => void
-    private mthSubMsgInteractionEvent: (componentName: String, fct: (msg: Message) => void) => void
-    private mthSubAddedUserEvent: (componentName: String, fct: (user: User) => void) => void
-    private mthSubUserVoiceConnectionEvent: (componentName: String, fct: (user: User) => void) => void
-    private mthSubBeforeSentEvent: (componentName: String, fct: (msg: MsgToSend) => boolean) => void
+    #mthSubBootConnectedEvent: (componentName: String, fct: () => void) => void
+    #mthSubMsgInteractionEvent: (componentName: String, fct: (msg: Message) => void) => void
+    #mthSubAddedUserEvent: (componentName: String, fct: (user: User) => void) => void
+    #mthSubUserVoiceConnectionEvent: (componentName: String, fct: (user: User) => void) => void
+    #mthSubBeforeSentEvent: (componentName: String, fct: (msg: MsgToSend) => boolean) => void
 
-    private mthAddNewWakeupDateEvent: <TArgs>(eventName: string, ownerName: string,  fct: (args: TArgs) => void, option?: WakeupDateOption) => void
-    private mthAddWakeupDateEvent: <TArgs>(wudEventToAdd: WakeupDateEvent<TArgs>) => void
-    private mthSubToWakeupDateEvent: <TArgs>(eventName: string, subName: string, args: TArgs, wakeupDate: number, nbCallBeforeRemove?: number, nextCall?: number) => void
+    #mthAddNewWakeupDateEvent: <TArgs>(eventName: string, ownerName: string,  fct: (args: TArgs) => void, option?: WakeupDateOption) => void
+    #mthAddWakeupDateEvent: <TArgs>(wudEventToAdd: WakeupDateEvent<TArgs>) => void
+    #mthSubToWakeupDateEvent: <TArgs>(eventName: string, subName: string, args: TArgs, wakeupDate: number, nbCallBeforeRemove?: number, nextCall?: number) => void
 
-    // constructor to init event interface
+    /**
+     * constructor to init event interface
+     * @param componentName component name
+     * @param mthInterface method interface
+     * @internal
+     */
     constructor(componentName: string, mthInterface: MethodInterface) {
-        this.componentName = componentName;
-        this.mthInterface = mthInterface;
+        this.#componentName = componentName;
+        this.#mthInterface = mthInterface;
 
         this.initInterface();
     }
     
-    // initiate the interface (in case if it can not be init in the constructor)
+    /** initiate the interface (in case if it can not be init in the constructor)
+     * @internal
+     */
     initInterface(){
-        this.mthSubBootConnectedEvent = this.mthInterface.getMethod("EventManager", "subBootConnectedEvent");
-        this.mthSubMsgInteractionEvent = this.mthInterface.getMethod("EventManager", "subMsgInteractionEvent");
-        this.mthSubAddedUserEvent = this.mthInterface.getMethod("EventManager", "subAddedUserEvent");
-        this.mthSubUserVoiceConnectionEvent = this.mthInterface.getMethod("EventManager", "subUserVoiceConnectionEvent");
-        this.mthSubBeforeSentEvent = this.mthInterface.getMethod("EventManager", "subBeforeSentEvent");
+        this.#mthSubBootConnectedEvent = this.#mthInterface.getMethod("EventManager", "subBootConnectedEvent");
+        this.#mthSubMsgInteractionEvent = this.#mthInterface.getMethod("EventManager", "subMsgInteractionEvent");
+        this.#mthSubAddedUserEvent = this.#mthInterface.getMethod("EventManager", "subAddedUserEvent");
+        this.#mthSubUserVoiceConnectionEvent = this.#mthInterface.getMethod("EventManager", "subUserVoiceConnectionEvent");
+        this.#mthSubBeforeSentEvent = this.#mthInterface.getMethod("EventManager", "subBeforeSentEvent");
         
-        this.mthAddNewWakeupDateEvent = this.mthInterface.getMethod("EventManager", "addNewWakeupDateEvent");
-        this.mthAddWakeupDateEvent = this.mthInterface.getMethod("EventManager", "addWakeupDateEvent");
-        this.mthSubToWakeupDateEvent = this.mthInterface.getMethod("EventManager", "subToWakeupDateEvent");
+        this.#mthAddNewWakeupDateEvent = this.#mthInterface.getMethod("EventManager", "addNewWakeupDateEvent");
+        this.#mthAddWakeupDateEvent = this.#mthInterface.getMethod("EventManager", "addWakeupDateEvent");
+        this.#mthSubToWakeupDateEvent = this.#mthInterface.getMethod("EventManager", "subToWakeupDateEvent");
     }
 
-    // Subscribe function to boot connected event
+    /**
+     * Subscribe function to boot connected event
+     * @param fct the function to sub
+     */
     subBootConnectedEvent(fct: () => void) {
-        this.mthSubBootConnectedEvent(this.componentName, fct);
+        this.#mthSubBootConnectedEvent(this.#componentName, fct);
     }
 
-    // Subscribe function to msg interaction event
+    
+    /**
+     * Subscribe function to msg interaction event
+     * @param fct the function to sub
+     */
     subMsgInteractionEvent(fct: (msg: Message) => void) {
-        this.mthSubMsgInteractionEvent(this.componentName, fct);
+        this.#mthSubMsgInteractionEvent(this.#componentName, fct);
     }
 
-    // Subscribe function to added user event
+    
+    /**
+     * Subscribe function to added user event
+     * @param fct the function to sub
+     */
     subAddedUserEvent(fct: (user: User) => void) {
-        this.mthSubAddedUserEvent(this.componentName, fct);
+        this.#mthSubAddedUserEvent(this.#componentName, fct);
     }
 
-    // Subscribe function to user voice connection event
+    /**
+     * Subscribe function to user voice connection event
+     * @param fct the function to sub
+     */
     subUserVoiceConnectionEvent(fct: (user: User) => void) {
-        this.mthSubUserVoiceConnectionEvent(this.componentName, fct);
+        this.#mthSubUserVoiceConnectionEvent(this.#componentName, fct);
     }
 
-    // Subscribe function to before sent message event
+    
+    /**
+     * Subscribe function to before sent message event
+     * @param fct the function to sub
+     */
     subBeforeSentEvent(fct: (msg: MsgToSend) => boolean) {
-        this.mthSubBeforeSentEvent(this.componentName, fct);
+        this.#mthSubBeforeSentEvent(this.#componentName, fct);
     }
 
     /** Wake Up Date Event **/
@@ -73,7 +98,7 @@ export class EventInterface {
      * @param option option for the event
      */
     addNewWakeupDateEvent<TArgs>(eventName: string,  fct: (args: TArgs) => void, option?: WakeupDateOption): void {
-        this.mthAddNewWakeupDateEvent(eventName, this.componentName, fct, option);
+        this.#mthAddNewWakeupDateEvent(eventName, this.#componentName, fct, option);
     }
 
     /**
@@ -81,7 +106,7 @@ export class EventInterface {
      * @param wudEventToAdd event to add
      */
     addWakeupDate<TArgs>(wudEventToAdd: WakeupDateEvent<TArgs>) {
-        this.mthAddWakeupDateEvent(wudEventToAdd);
+        this.#mthAddWakeupDateEvent(wudEventToAdd);
     }
 
     /**
@@ -94,7 +119,7 @@ export class EventInterface {
      * @param nextCall indicate when recall the sub if it is not remove
      */
     subToWakeupDateEvent<TArgs>(eventName: string, subName: string, args: TArgs, wakeupDate: number, nbCallBeforeRemove?: number, nextCall?: number) {
-        this.mthSubToWakeupDateEvent(eventName, subName, args, wakeupDate, nbCallBeforeRemove, nextCall);
+        this.#mthSubToWakeupDateEvent(eventName, subName, args, wakeupDate, nbCallBeforeRemove, nextCall);
     }
 
 

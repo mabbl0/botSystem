@@ -4,7 +4,7 @@ import { DiscordInterface } from "./discord-interface-api";
 import { Recycler } from "../tools/collection/recycler";
 import { User } from "../bot-system/user/user";
 import { ConvertArgumentType } from "./util/discord-convert-type";
-import { VoiceChannel } from "../bot-system/communication/voice/voice-type";
+import { VoiceChannel } from "../bot-system/communication/voice/voice-channel";
 import { UserVoiceUpdateControl } from "../bot-system/communication/voice/user-voice-control";
 import { MessageRecycled } from "../bot-system/communication/message";
 import { InteractionArgumentType, InteractionRecycled, InteractionType } from "../bot-system/communication/interaction";
@@ -12,6 +12,7 @@ import { Channel, ChannelCore } from "../bot-system/communication/channel";
 import { ModalChoiceData } from "../bot-system/communication/message-component/modal";
 import { MsgComponentType } from "../bot-system/communication/message-component/message-component-type";
 
+/** @internal */
 export class EventDiscord implements EventAPI {
     private discordApi: DiscordInterface
     msgRecycler: Recycler<MessageRecycled>

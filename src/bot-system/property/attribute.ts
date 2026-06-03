@@ -25,7 +25,10 @@ export class Attribute {
 
     /** Load and Save **/
 
-    // load data. Replace attribute value, or create a new attribute
+    /**
+     * load data. Replace attribute value, or create a new attribute
+     * @param attrLoaded the attribute loaded
+     */
     load(attrLoaded: { [key: string]: any }) {
         const keysLoaded = Object.keys(attrLoaded) as (keyof { [key: string]: any })[];
         keysLoaded.forEach(keyStr => {

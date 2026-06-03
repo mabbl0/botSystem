@@ -17,9 +17,10 @@ export interface MentionSelectBase {
 export class MentionableSelect extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
     interactionFct: (interaction: Interaction, mentionSelect: MentionableSelect) => void
-    private _option: MentionSelectOption
+    #option: MentionSelectOption
 
     
+    /** @internal */
     constructor(msgcOwner: MessageComponentBase, mentionSelect?: MentionSelectBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
         super(msgcOwner, displayType, MsgComponentType.MentionableSelect);
 
@@ -39,7 +40,7 @@ export class MentionableSelect extends MessageComponentBase implements MsgCompon
 
         // setup option
         if (mentionSelect?.option == undefined) {
-            this._option = {
+            this.#option = {
                 placeholder: undefined,
                 minChoice: 1,
                 maxChoice: 1,
@@ -48,27 +49,27 @@ export class MentionableSelect extends MessageComponentBase implements MsgCompon
             }
         }
         else {
-            this._option = mentionSelect?.option;
-            if (this._option.minChoice == undefined) {
-                this._option.minChoice = 1;
+            this.#option = mentionSelect?.option;
+            if (this.#option.minChoice == undefined) {
+                this.#option.minChoice = 1;
             }
-            if (this._option.maxChoice == undefined) {
-                this._option.maxChoice = 1;
+            if (this.#option.maxChoice == undefined) {
+                this.#option.maxChoice = 1;
             }
-            if (this._option.disable == undefined) {
-                this._option.disable = false;
+            if (this.#option.disable == undefined) {
+                this.#option.disable = false;
             }
-            if (this._option.adminOnly == undefined) {
-                this._option.adminOnly = false;
+            if (this.#option.adminOnly == undefined) {
+                this.#option.adminOnly = false;
             }
         }
 
-        if(this._option.minChoice > this._option.maxChoice) {
-            this._option.minChoice = this._option.maxChoice;
+        if(this.#option.minChoice > this.#option.maxChoice) {
+            this.#option.minChoice = this.#option.maxChoice;
         }
         // disable string select if it has no interaction
         if (this.interactionFct == undefined) {
-            this._option.disable = true;
+            this.#option.disable = true;
         }
 
         this.interactiveComponents = [this];
@@ -76,7 +77,7 @@ export class MentionableSelect extends MessageComponentBase implements MsgCompon
 
     get option() {
         this.modified = true;
-        return this._option;
+        return this.#option;
     }
 
     /**

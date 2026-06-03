@@ -5,7 +5,7 @@ import { UnitComponent } from "../component/unit-component";
 import { PropAccess } from "../property/property-type";
 import { Method, MethodOption, MthMapComponent } from "./method-type";
 
-
+/** @internal */
 export class MethodManager extends UnitComponent {
     private mthsMap: MapName<MthMapComponent>
     private propBsState: PropAccess<BotSystemState>

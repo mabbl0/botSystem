@@ -7,6 +7,7 @@ import { DiscordCmd } from "./util/discord-interface-type";
 import { DiscordInterface } from './discord-interface-api';
 
 
+/** @internal */
 export class CommandDiscord implements CommandAPI {
     private discordApi: DiscordInterface
     // Map<discordCmd.name, DiscordCmdAdapt>

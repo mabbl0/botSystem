@@ -4,6 +4,7 @@ import { SlashCmd } from "../../bot-system/communication/command/command-type";
 import { InteractionArgument, InteractionArgumentType, InteractionType } from "../../bot-system/communication/interaction";
 
 // Convert the Interaction Type
+/** @internal */
 export class ConvertCommandInteractionType {
     static convertBs2Discord(value: InteractionType): Discord.ApplicationCommandType {
         switch (value) {
@@ -20,6 +21,7 @@ export class ConvertCommandInteractionType {
 }
 
 // Convert the Argument Type from Command Interaction description
+/** @internal */
 export class ConvertArgumentType {
     static convertBs2Discord(value: InteractionArgumentType): Discord.ApplicationCommandOptionType {
         switch (value) {

@@ -26,6 +26,7 @@ export const enum InteractionArgumentType {
     Unkown
 }
 
+/** @internal */
 export function stringToArgType(argTypeStr: string): InteractionArgumentType {
     switch (argTypeStr) {
         case "string":
@@ -73,6 +74,7 @@ export interface Interaction extends CommunicationBase<Message> {
     getChoice<ChoiceType>(defaultChoice: ChoiceType): ChoiceType
 }
 
+/** @internal */
 export class InteractionCore implements Interaction {
     interactApi: any
     _author: User
@@ -297,6 +299,7 @@ export class InteractionCore implements Interaction {
 }
 
 
+/** @internal */
 export class InteractionRecycled extends InteractionCore implements RecycledItem<InteractionRecycled> {
     used: boolean
     trashBackFct: (item: InteractionRecycled) => void

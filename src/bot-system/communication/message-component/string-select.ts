@@ -26,16 +26,16 @@ export interface StringSelectBase {
 export class StringSelect extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
     interactionFct: (interaction: Interaction, stringSelect: StringSelect) => void
-    private _option: StringSelectOption
-
-    private _choices: StringSelectChoice[]
+    #option: StringSelectOption
+    #choices: StringSelectChoice[]
     
+    /** @internal */
     constructor(msgcOwner: MessageComponentBase, strSelect: StringSelectBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
         super(msgcOwner, displayType, MsgComponentType.StringSelect);
 
         this.id = strSelect.id;
         this.interactionFct = strSelect.interactionFct;
-        this._choices = strSelect.choices;
+        this.#choices = strSelect.choices;
         
         if(strSelect.id != undefined) {
             this.id = strSelect.id;
@@ -51,7 +51,7 @@ export class StringSelect extends MessageComponentBase implements MsgComponentIn
 
         // setup option
         if (strSelect.option == undefined) {
-            this._option = {
+            this.#option = {
                 placeholder: undefined,
                 minChoice: 1,
                 maxChoice: 1,
@@ -60,27 +60,27 @@ export class StringSelect extends MessageComponentBase implements MsgComponentIn
             }
         }
         else {
-            this._option = strSelect.option;
-            if (this._option.minChoice == undefined) {
-                this._option.minChoice = 1;
+            this.#option = strSelect.option;
+            if (this.#option.minChoice == undefined) {
+                this.#option.minChoice = 1;
             }
-            if (this._option.maxChoice == undefined) {
-                this._option.maxChoice = 1;
+            if (this.#option.maxChoice == undefined) {
+                this.#option.maxChoice = 1;
             }
-            if (this._option.disable == undefined) {
-                this._option.disable = false;
+            if (this.#option.disable == undefined) {
+                this.#option.disable = false;
             }
-            if (this._option.adminOnly == undefined) {
-                this._option.adminOnly = false;
+            if (this.#option.adminOnly == undefined) {
+                this.#option.adminOnly = false;
             }
         }
 
-        if(this._option.minChoice > this._option.maxChoice) {
-            this._option.minChoice = this._option.maxChoice;
+        if(this.#option.minChoice > this.#option.maxChoice) {
+            this.#option.minChoice = this.#option.maxChoice;
         }
         // disable string select if it has no interaction
         if (this.interactionFct == undefined) {
-            this._option.disable = true;
+            this.#option.disable = true;
         }
 
         this.interactiveComponents = [this];
@@ -88,15 +88,15 @@ export class StringSelect extends MessageComponentBase implements MsgComponentIn
 
     get option() {
         this.modified = true;
-        return this._option;
+        return this.#option;
     }
     get choices() {
         this.modified = true;
-        return this._choices;
+        return this.#choices;
     }
     set choices(c: StringSelectChoice[]) {
         this.modified = true;
-        this._choices = c;
+        this.#choices = c;
     }
 
     /**

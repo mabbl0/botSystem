@@ -12,6 +12,7 @@ interface EventsJson {
     wakeupDateEvents: WakeupDateJson
 }
 
+/** @internal */
 export class EventManager extends UnitComponent {
     private saveInterface: SaveInterface
     private eventArr: Array<Event<any,any>>

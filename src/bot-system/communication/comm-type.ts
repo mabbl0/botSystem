@@ -41,7 +41,7 @@ export interface CommunicationBase<PromiseReplyType> {
 }
 
 
-
+/** @internal */
 export const enum CommunicationAction {
     ChannelSend,
 
@@ -54,6 +54,7 @@ export const enum CommunicationAction {
     InteractionDefer
 }
 
+/** @internal */
 export interface CommunicationFunction {
     beforeSentFct: (msg: MsgToSend) => boolean
 

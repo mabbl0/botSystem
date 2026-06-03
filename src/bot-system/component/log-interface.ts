@@ -1,22 +1,31 @@
 import { nowDateStr } from "../../tools/date"
 import { LogLevel } from "./component-type";
 
-// Interface to log with different log level
+/** Interface to log with different log level
+ * 
+ */
 export class LogInterface {
-    private _mthSendMsgToBotChannel: (msg: string) => void
-    private componentName: string
+    #mthSendMsgToBotChannel: (msg: string) => void
+    #componentName: string
 
     constructor(componentName: string){
-        this.componentName = componentName;
+        this.#componentName = componentName;
     }
 
+    /** @internal */
     set mthSendMsgToBotChannel(mth: (msg: string) => void){
-        if(this._mthSendMsgToBotChannel == undefined){ // only once
-            this._mthSendMsgToBotChannel = mth;
+        if(this.#mthSendMsgToBotChannel == undefined){ // only once
+            this.#mthSendMsgToBotChannel = mth;
         }
     }
-
-    // log a text on the console if the log level premit it, and send the bot channel if asked
+    
+    /**
+     * log a text on the console if the log level premit it, and send the bot channel if asked
+     * @param componentLogLevel the actual component log level
+     * @param txtLogLevel the text log level
+     * @param onBotChannel indicate if the message shall be sent to the bot channel
+     * @param txt the text to log
+     */
     log(componentLogLevel: number, txtLogLevel: number, onBotChannel: boolean, txt: string){
         if(txtLogLevel <= componentLogLevel){
             let logStr = this.getLogStr(txtLogLevel, txt);
@@ -32,15 +41,25 @@ export class LogInterface {
             this.logChannel(onBotChannel, logStr);
         }
     }
-
-    // send the log in the bot channel if asked
+    
+    /**
+     * send the log in the bot channel if asked
+     * @param onBotChannel indicate if the message shall be sent to the bot channel
+     * @param txt the text to log
+     * @internal
+     */
     private logChannel(onBotChannel: boolean, txt: string){
-        if(onBotChannel && this._mthSendMsgToBotChannel != undefined){
-            this._mthSendMsgToBotChannel('`' + txt + '`');
+        if(onBotChannel && this.#mthSendMsgToBotChannel != undefined){
+            this.#mthSendMsgToBotChannel('`' + txt + '`');
         }
     }
 
-    // get the string log level
+    /**
+     * get the string log level
+     * @param logLevel the log level
+     * @returns the log level string
+     * @internal
+     */
     private getLogLevelStr(logLevel: number): string{
         switch (logLevel) {
             case LogLevel.Error:
@@ -56,8 +75,14 @@ export class LogInterface {
         }
     }
 
-    // get the log with extra information
+    /**
+     * get the log with extra information
+     * @param logLevel the log level
+     * @param txt the text to print
+     * @returns the string ready to print
+     * @internal
+     */
     private getLogStr(logLevel: number, txt: string): string{
-        return `[${nowDateStr()}][${this.componentName}][${this.getLogLevelStr(logLevel)}] ${txt}`;
+        return `[${nowDateStr()}][${this.#componentName}][${this.getLogLevelStr(logLevel)}] ${txt}`;
     }
 }
