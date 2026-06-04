@@ -82,7 +82,7 @@ export class ComponentManager extends UnitComponent {
         const ExtensionClass = require(resolve(this.bsConf.components.srcDir + extensionPath.path));
         if(ExtensionClass && ExtensionClass.default) {
             component.extensionList.push( 
-                new ExtensionClass.default(component, component.name, extensionPath.name) 
+                new ExtensionClass.default(component, extensionPath.name) 
             );
         }
         else{

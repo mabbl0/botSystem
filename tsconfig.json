@@ -23,6 +23,5 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "types": ["node"]
-  },
-  "exclude": ["src/**/index.ts"]
+  }
 }

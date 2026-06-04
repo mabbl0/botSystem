@@ -1,1 +1,1 @@
-export type {DiscordInterface} from './discord-interface-api'
+export {DiscordInterface} from './discord-interface-api'

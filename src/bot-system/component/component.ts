@@ -9,7 +9,7 @@ export abstract class Component extends UnitComponent {
     conf: ComponentConf
     /** @internal */
     extensionList: Array<Extension<Component>>
-    /** @internal */
+    
     protected saveInterface: SaveInterface
 
     /**

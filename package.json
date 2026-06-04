@@ -16,15 +16,12 @@
   "engines": {
     "node": ">=25.8.1"
   },
-  "directories": {
-    "lib": "src",
-    "test": "tests"
-  },
   "files": [
     "dist"
   ],
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
+
   "license": "MIT",
   "keywords": [
     "bot",
@@ -33,7 +30,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/mabbl0/botSystem"
+    "url": "https://github.com/mabbl0/botSystem.git"
   },
   "bugs": {
     "url": "https://github.com/mabbl0/botSystem/issues"
