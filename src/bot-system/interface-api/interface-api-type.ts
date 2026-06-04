@@ -38,17 +38,16 @@ export interface InterfaceAPI {
 /** @internal */
 export interface EventAPI {
     /*** Method to Initiate Events ***/
-    /** @internal */
     initBootEvent( bootFct: () => void ): void
-    /** @internal */
+    
     initMessageCreationEvent( messageRecycler: Recycler<MessageRecycled>, msgCreationFct: (message: MessageRecycled) => void ): void
-    /** @internal */
+    
     initInteractionCreationEvent( interactRecycler: Recycler<InteractionRecycled>, interactCreationFct: (interaction: InteractionRecycled) => void): void
-    /** @internal */
+    
     initUserAddEvent(userAddFct: (user: User) => void): void
-    /** @internal */
+    
     initChannelCreateEvent(channelCreateFct: (channel: Channel) => void): void
-    /** @internal */
+    
     initVoiceUpdateEvent(userVoiceConnexionFct: (user: User) => void): void
 }
 

@@ -51,9 +51,11 @@ export class YesNoButtons<TArgs> {
         return this.msgComponent;
     }
 
+    /** @internal */
     private yesButton(interaction: Interaction) {
         this.yesCallback(interaction, this.args);
     }
+    /** @internal */
     private noButton(interaction: Interaction) {
         this.noCallback(interaction, this.args);
     }

@@ -13,7 +13,7 @@ import { ChannelSelect, ChannelSelectBase } from "./channel-select";
 // TODO: update !click command
 
 export class MessageComponent extends MessageComponentBase {
-    /** @intrenal */
+    /** @internal */
     msgComponents: MessageComponentBase[]
     readonly id: string
     #msgcCounter: number
@@ -61,13 +61,13 @@ export class MessageComponent extends MessageComponentBase {
         this.#removeMsgComponentInteraction = undefined;
     }
 
-    /** @intrenal */
+    /** @internal */
     set commSent(commSent: CommunicationBase<Message>) {
         if(this.#commSent==undefined) { // only once
             this.#commSent = commSent;
         }
     }
-    /** @intrenal */
+    /** @internal */
     get needComm(): boolean {
         return this.#commSent == undefined;
     }
@@ -76,7 +76,7 @@ export class MessageComponent extends MessageComponentBase {
      * add a new message component
      * @param newMsgComponent the new message component to add
      * @returns the new message component added
-     * @intrenal
+     * @internal
      */
     private addNewMessageComponent<MsgComponentType extends MessageComponentBase>(newMsgComponent: MsgComponentType): MsgComponentType {
         this.msgComponents.push(newMsgComponent);
@@ -91,7 +91,7 @@ export class MessageComponent extends MessageComponentBase {
      * add a new message component
      * @param newMsgComponent the new message component to add
      * @returns the new message component added
-     * @intrenal
+     * @internal
      */
     private addNewInteractiveMessageComponent<MsgComponentType extends MessageComponentBase>(newMsgComponent: MsgComponentType): MsgComponentType {
         newMsgComponent.interactiveComponents.forEach( iComponent => this.interactiveComponents.push(iComponent));
@@ -192,6 +192,7 @@ export class MessageComponent extends MessageComponentBase {
 
     /**
      * @returns a unique id for the message component
+     * @internal
      */
     override getUniqueId(): string {
         return this.id + this.#msgcCounter.toString();
@@ -199,7 +200,7 @@ export class MessageComponent extends MessageComponentBase {
 
     /**
      * prepare the message component to be sent
-     * @intrenal
+     * @internal
      */
     prepareToSend() {
         // fisrt indicate and update the msg component with interaction

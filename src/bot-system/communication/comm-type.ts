@@ -36,8 +36,6 @@ export interface CommunicationBase<PromiseReplyType> {
 
     reply(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<PromiseReplyType>
     edit(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<PromiseReplyType>
-
-    commFunction: CommunicationFunction
 }
 
 

@@ -1,6 +1,6 @@
 import { UnitComponent } from "../component/unit-component";
 import { MapName } from "../../tools/collection/map";
-import { Prop, PropAccess, PropMapComponent } from '../property/property-type'
+import { Prop, PropAccess, PropMapComponent } from './property'
 import { Message } from "../communication/message";
 
 /** @internal */

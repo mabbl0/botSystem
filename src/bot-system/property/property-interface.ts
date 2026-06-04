@@ -1,4 +1,4 @@
-import { Prop, PropAccess, PropOption } from "./property-type";
+import { Prop, PropAccess, PropOption } from "./property";
 import { MethodInterface } from "../method/method-interface";
 
 export class PropInterface {

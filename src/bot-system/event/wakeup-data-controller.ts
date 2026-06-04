@@ -1,7 +1,7 @@
 import { MapName } from "../../tools/collection/map";
 import { LogLevel } from "../component/component-type";
 import { PropInterface } from "../property/property-interface";
-import { Prop } from "../property/property-type";
+import { Prop } from "../property/property";
 import { WakeupDateEvent, WakeupDateEventJson, WakeupDateOption } from "./wakeup-date-event";
 
 export interface WakeupDateJson {

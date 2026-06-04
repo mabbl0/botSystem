@@ -19,7 +19,7 @@ export class UserVoiceControl {
     protected _channel: VoiceChannel
     #userVoiceControlFunction: UserVoiceControlApiFunction
 
-    /** @intrenal */
+    /** @internal */
     constructor(userVoiceControlApi: any, actualVoiceChannel: VoiceChannel, userVoiceControlFunction: UserVoiceControlApiFunction) {
         this.userVoiceControlApi = userVoiceControlApi;
         this._channel = actualVoiceChannel;

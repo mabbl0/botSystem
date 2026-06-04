@@ -14,7 +14,7 @@ import { PropertyManager } from "./property/property-manager";
 import { MethodManager } from "./method/method-manager";
 
 import type { InterfaceAPI } from './interface-api/interface-api-type'
-import { Prop } from './property/property-type'
+import { Prop } from './property/property'
 import { User } from "./user/user";
 import { Recycler } from "../tools/collection/recycler";
 import { VoiceManager } from "./communication/voice/voice-manager";

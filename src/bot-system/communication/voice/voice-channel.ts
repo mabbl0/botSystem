@@ -13,7 +13,7 @@ export class VoiceChannel {
     #mentionName: string
     #getVoiceChannelUsers: (voiceChannelApi: any) => Array<User>
 
-    /** @intrenal */
+    /** @internal */
     constructor(voiceChannelApi: any, name: string, mentionName: string, getVoiceChannelUsers: (voiceChannelApi: any) => Array<User>){
         this.#voiceChannelApi = voiceChannelApi;
         this.name = name;

@@ -9,7 +9,7 @@ export interface Channel {
     toString(): string
 }
 
-/** @intrenal */
+/** @internal */
 export class ChannelCore implements Channel {
     private channelApi: any
     readonly name: string
@@ -17,7 +17,6 @@ export class ChannelCore implements Channel {
 
     commFunction: CommunicationFunction
     
-
     constructor(channelApi: any, channelName: string, mentionStr: string){
         this.channelApi = channelApi;
         this.name = channelName;

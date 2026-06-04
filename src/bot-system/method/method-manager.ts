@@ -2,7 +2,7 @@ import { MapName } from "../../tools/collection/map";
 import { BotSystemState } from "../bot-system-type";
 import { ComponentType } from "../component/component-type";
 import { UnitComponent } from "../component/unit-component";
-import { PropAccess } from "../property/property-type";
+import { PropAccess } from "../property/property";
 import { Method, MethodOption, MthMapComponent } from "./method-type";
 
 /** @internal */

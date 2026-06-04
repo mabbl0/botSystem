@@ -1,6 +1,6 @@
 import { BotSystemState } from "../../bot-system-type";
 import { Unit } from "../../component/unit";
-import { PropAccess } from "../../property/property-type";
+import { PropAccess } from "../../property/property";
 import { Interaction, InteractionArgument, stringToArgType } from "../interaction";
 import { Message } from "../message";
 import { SlashCmdOption, TxtCmdOption } from "./command-type";

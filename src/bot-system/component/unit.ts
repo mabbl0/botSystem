@@ -1,7 +1,7 @@
 import { ComponentType, LogLevel } from './component-type'
 import { LogInterface } from './log-interface'
 import { MethodInterface } from '../method/method-interface'
-import { Prop } from '../property/property-type'
+import { Prop } from '../property/property'
 import { PropInterface } from '../property/property-interface'
 import { MthAddPrototype, MthGetPrototype, MthInitPrototype } from '../method/method-type'
 
@@ -69,15 +69,18 @@ export abstract class Unit {
 
     /*** Getter / Setter Methods ***/
 
+    /** @internal */
     get type(): ComponentType {
         return this.#ptrType.value;
     }
+    /** @internal */
     set type(t: ComponentType){
         if(this.#ptrType.value == ComponentType.BotSystem && t != ComponentType.BotSystem){
             this.#ptrType.value = t;
         }
     }
 
+    /** @internal */
     toString(): string {
         return `**${this.name}**: ${this.description}`;
     }
