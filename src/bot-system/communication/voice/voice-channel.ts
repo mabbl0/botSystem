@@ -7,7 +7,8 @@ export interface PlayAudioOption {
 
 // Voice channel
 export class VoiceChannel {
-    #voiceChannelApi: any
+    /** @internal */
+    private voiceChannelApi: any
 
     readonly name: string
     #mentionName: string
@@ -15,7 +16,7 @@ export class VoiceChannel {
 
     /** @internal */
     constructor(voiceChannelApi: any, name: string, mentionName: string, getVoiceChannelUsers: (voiceChannelApi: any) => Array<User>){
-        this.#voiceChannelApi = voiceChannelApi;
+        this.voiceChannelApi = voiceChannelApi;
         this.name = name;
         this.#mentionName = mentionName;
         this.#getVoiceChannelUsers = getVoiceChannelUsers;
@@ -25,7 +26,7 @@ export class VoiceChannel {
      * Return the user list connected to the voice channel
      */
     users(): Array<User> {
-        return this.#getVoiceChannelUsers( this.#voiceChannelApi );
+        return this.#getVoiceChannelUsers( this.voiceChannelApi );
     }
     
     /**
