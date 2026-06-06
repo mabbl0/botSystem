@@ -1,6 +1,6 @@
 {
   "name": "bot-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "devDependencies": {
     "@types/node": "^24.10.1",
     "dts-bundle-generator": "^9.5.1",
@@ -21,7 +21,6 @@
   ],
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
-
   "license": "MIT",
   "keywords": [
     "bot",
