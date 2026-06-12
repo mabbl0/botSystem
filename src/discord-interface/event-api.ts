@@ -144,6 +144,8 @@ export class EventDiscord implements EventAPI {
         let interact = this.interactRecycler.getRecycledMessage(interactionApi);
         interact._author = this.discordApi.chat.users.get(interactionApi.user.id); // replace the user from Api by the BotSystem User
         interact._channel = this.discordApi.chat.channels.get(interactionApi.channel.name); // replace the channel from Api by the BotSystem Channel
+        interact._date = interactionApi.createdTimestamp;
+
         return interact;
     }
 
