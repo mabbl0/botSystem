@@ -3,7 +3,7 @@ import Discord from "discord.js"
 import { AdaptCommAPI } from "../bot-system/interface-api/interface-api-type"
 import { DiscordInterface } from "./discord-interface-api"
 import { MsgComponentAdapterApi, MsgComponentDisplayType } from "../bot-system/communication/message-component/message-component-type";
-import { CommunicationAction, MsgToSend, CommReturn, thenLogError } from "../bot-system/communication/comm-type";
+import { CommunicationAction, MsgToSend, CommReturn, thenLogError, MsgOption } from "../bot-system/communication/comm-type";
 import { MsgComponentAdapter } from "./util/message-component-adapter";
 import { Message, MessageCore } from "../bot-system/communication/message";
 
@@ -43,22 +43,15 @@ export class AdaptCommDiscord implements AdaptCommAPI {
 
         // it is a message to send, reply or edit
         let msgToSend: any = {};
+        let nextMsgToSend: any[] = [];
 
         // check if the message too long, needed to be truncate
         if (msg.content != undefined) {
-            if (msg.content.length > 2000) {
-                msgToSend.content = msgToSend.content.slice(0, 2000);
-            }
-            else {
-                msgToSend.content = msg.content;
-            }
+            msgToSend.content = this.adaptMessageContent(msg.content, nextMsgToSend);
         }
 
         // adapt message option
-        msgToSend.flags = 0;
-        if (msg.option?.ephemeral) {
-            msgToSend.flags += Discord.MessageFlags.Ephemeral;
-        }
+        this.adaptMessageOption(msg.option, msgToSend, nextMsgToSend);
 
         // adapt message Component
         let modalToSend = false;
@@ -73,19 +66,65 @@ export class AdaptCommDiscord implements AdaptCommAPI {
         }
 
         // it is not a modal to send
-        return this.sendMsg(action, msg, msgToSend, apiObject, withReturn);
+        return this.sendMsg(action, msg, msgToSend, nextMsgToSend, apiObject, withReturn);
     }
 
+
+    /**
+     * Adapt the message content to discord message
+     * @param msgContent the message content to send
+     * @param nextMsgToSend the list of message to send
+     * @returns the first message to send
+     */
+    adaptMessageContent(msgContent: string, nextMsgToSend: any[]): string {
+        if (msgContent.length > 2000) {
+            this.adaptTheNextMsgToSend(msgContent.slice(2000), nextMsgToSend);
+            return msgContent.slice(0, 2000);
+        }
+        else {
+            return msgContent;
+        }
+    }
+
+    private adaptTheNextMsgToSend(msgContent: string, nextMsgToSend: any[]) {
+        if (msgContent.length > 2000) {
+            nextMsgToSend.push({ content: msgContent.slice(0, 2000) });
+            this.adaptTheNextMsgToSend(msgContent.slice(2000), nextMsgToSend);
+        }
+        else {
+            nextMsgToSend.push({ content: msgContent });
+        }
+    }
+
+
+    /**
+     * Adapt the message option to discord message
+     * @param msgOption thes message option
+     * @param listMsgToSend the list of message to send
+     */
+    adaptMessageOption(msgOption: MsgOption, msgToSend: any, nextMsgToSend: any[]) {
+        msgToSend.flags = 0;
+        if (msgOption?.ephemeral) {
+            msgToSend.flags += Discord.MessageFlags.Ephemeral;
+        }
+
+        nextMsgToSend.forEach(m => {
+            m.flags = 0;
+            if (msgOption?.ephemeral) {
+                m.flags += Discord.MessageFlags.Ephemeral;
+            }
+        });
+    }
 
 
     /**
      * Send the message
-     * @param action the action to do
-     * @param msgToSend the message to send with the modal
-     * @param apiObject the api object
+     * @param action the action to do (send, reply, edit)
+     * @param msgToSend the message to send
+     * @param apiObject the api object (cahnnel, message, interaction)
      * @param withReturn indicate if a return should be sent 
      */
-    sendMsg<PromiseReplyType>(action: CommunicationAction, msgBS: MsgToSend, msgToSend: any, apiObject: any, withReturn: boolean): CommReturn<PromiseReplyType> {
+    sendMsg<PromiseReplyType>(action: CommunicationAction, msgBS: MsgToSend, msgToSend: any, nextMsgToSend: any[], apiObject: any, withReturn: boolean): CommReturn<PromiseReplyType> {
         let isMsgcNeededMsg = msgBS.components != undefined && msgBS.components.needComm;
 
         switch (action) {
@@ -95,7 +134,19 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         (apiObject as Discord.TextChannel).send(msgToSend).then((msgApi) => {
                             let newMsg = this.newMsgFromDiscordResponse(msgApi);
                             resolveFct(newMsg);
+                            if (nextMsgToSend.length != 0) {
+                                let nextMsg = nextMsgToSend.splice(0, 1)[0];
+                                this.sendMsg(action, msgBS, nextMsg, nextMsgToSend, apiObject, false);
+                            }
                         });
+                    });
+                }
+                else if (nextMsgToSend.length != 0) {
+                    (apiObject as Discord.TextChannel).send(msgToSend).then(() => {
+                        if (nextMsgToSend.length != 0) {
+                            let nextMsg = nextMsgToSend.splice(0, 1)[0];
+                            this.sendMsg(action, msgBS, nextMsg, nextMsgToSend, apiObject, false);
+                        }
                     });
                 }
                 else {
@@ -108,7 +159,19 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         (apiObject as Discord.Message).reply(msgToSend).then((msgApi) => {
                             let newMsg = this.newMsgFromDiscordResponse(msgApi);
                             resolveFct(newMsg);
+                            if (nextMsgToSend.length != 0) {
+                                let nextMsg = nextMsgToSend.splice(0, 1)[0];
+                                this.sendMsg(action, msgBS, nextMsg, nextMsgToSend, apiObject, false);
+                            }
                         });
+                    });
+                }
+                else if (nextMsgToSend.length != 0) {
+                    (apiObject as Discord.Message).reply(msgToSend).then(() => {
+                        if (nextMsgToSend.length != 0) {
+                            let nextMsg = nextMsgToSend.splice(0, 1)[0];
+                            this.sendMsg(action, msgBS, nextMsg, nextMsgToSend, apiObject, false);
+                        }
                     });
                 }
                 else {
@@ -148,9 +211,14 @@ export class AdaptCommDiscord implements AdaptCommAPI {
             case CommunicationAction.InteractionReply:
                 if (isMsgcNeededMsg) {
                     return new Promise<Message>((resolveFct) => {
-                        (apiObject as Discord.ChatInputCommandInteraction).reply(msgToSend).then((interactionApi) => {
-                            let newMsg = this.newMsgFromDiscordResponse(interactionApi as any);
+                        (apiObject as Discord.ChatInputCommandInteraction).reply(msgToSend);
+                        (apiObject as Discord.ChatInputCommandInteraction).fetchReply().then((msgApi) => {
+                            let newMsg = this.newMsgFromDiscordResponse(msgApi);
                             resolveFct(newMsg);
+                            if (nextMsgToSend.length != 0) {
+                                let nextMsg = nextMsgToSend.splice(0, 1)[0];
+                                this.sendMsg(CommunicationAction.ChannelSend, msgBS, nextMsg, nextMsgToSend, msgApi.channel, false);
+                            }
                         });
                     });
                 }
@@ -160,7 +228,20 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         (apiObject as Discord.ChatInputCommandInteraction).fetchReply().then((msgApi) => {
                             let newMsg = this.newMsgFromDiscordResponse(msgApi);
                             resolveFct(newMsg);
+                            if (nextMsgToSend.length != 0) {
+                                let nextMsg = nextMsgToSend.splice(0, 1)[0];
+                                this.sendMsg(CommunicationAction.ChannelSend, msgBS, nextMsg, nextMsgToSend, msgApi.channel, false);
+                            }
                         });
+                    });
+                }
+                else if (nextMsgToSend.length != 0) {
+                    (apiObject as Discord.ChatInputCommandInteraction).reply(msgToSend);
+                    (apiObject as Discord.ChatInputCommandInteraction).fetchReply().then((msgApi) => {
+                        if (nextMsgToSend.length != 0) {
+                            let nextMsg = nextMsgToSend.splice(0, 1)[0];
+                            this.sendMsg(CommunicationAction.ChannelSend, msgBS, nextMsg, nextMsgToSend, msgApi.channel, false);
+                        }
                     });
                 }
                 else {
@@ -207,7 +288,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         // the showModal promise return is unexploitable
                         // so build and return a message from the apiObject, which is here a interaction
                         // a interaction button (with a message) or interaction slash command (without message)
-                        resolve( this.newMsgFromDiscordResponse(apiObject) );
+                        resolve(this.newMsgFromDiscordResponse(apiObject));
                     });
                 });
             }
@@ -241,9 +322,9 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         (apiObject as Discord.TextChannel).createMessageComponentCollector(collectorOption)
                             .on('collect', async modalButtonInteraction => {
                                 modalButtonInteraction.showModal(msgToSend, { withResponse: true }).then((_interactionModalApi) => {
-                                    resolve( this.newMsgFromDiscordResponse(modalButtonInteraction.message) );
+                                    resolve(this.newMsgFromDiscordResponse(modalButtonInteraction.message));
                                 });
-                                if(modalButtonInteraction.message.deletable) {
+                                if (modalButtonInteraction.message.deletable) {
                                     modalButtonInteraction.message.delete();
                                 }
                             });
@@ -255,9 +336,9 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         (apiObject as Discord.Message).channel.createMessageComponentCollector(collectorOption)
                             .on('collect', async modalButtonInteraction => {
                                 modalButtonInteraction.showModal(msgToSend, { withResponse: true }).then((_interactionModalApi) => {
-                                    resolve( this.newMsgFromDiscordResponse(modalButtonInteraction.message) );
+                                    resolve(this.newMsgFromDiscordResponse(modalButtonInteraction.message));
                                 });
-                                if(modalButtonInteraction.message.deletable) {
+                                if (modalButtonInteraction.message.deletable) {
                                     modalButtonInteraction.message.delete();
                                 }
                             });
@@ -269,9 +350,9 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         (apiObject as Discord.Message).createMessageComponentCollector(collectorOption)
                             .on('collect', async modalButtonInteraction => {
                                 modalButtonInteraction.showModal(msgToSend, { withResponse: true }).then((_interactionModalApi) => {
-                                    resolve( this.newMsgFromDiscordResponse(modalButtonInteraction.message) );
+                                    resolve(this.newMsgFromDiscordResponse(modalButtonInteraction.message));
                                 });
-                                if(modalButtonInteraction.message.deletable) {
+                                if (modalButtonInteraction.message.deletable) {
                                     modalButtonInteraction.message.delete();
                                 }
                             });
@@ -283,9 +364,9 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                         (apiObject as Discord.MessageComponentInteraction).channel.createMessageComponentCollector(collectorOption)
                             .on('collect', async modalButtonInteraction => {
                                 modalButtonInteraction.showModal(msgToSend, { withResponse: true }).then((_interactionModalApi) => {
-                                    resolve( this.newMsgFromDiscordResponse(modalButtonInteraction.message) );
+                                    resolve(this.newMsgFromDiscordResponse(modalButtonInteraction.message));
                                 });
-                                if(modalButtonInteraction.message.deletable) {
+                                if (modalButtonInteraction.message.deletable) {
                                     modalButtonInteraction.message.delete();
                                 }
                             });
@@ -304,7 +385,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
     /**
      * finish to Adapt the message component message to discord Api 
      * @param msg the message to adapt
-     * @param msgToSend the message send to discord api
+     * @param listMsgToSend the messages send to discord api
      * @returns indicate if it is a modal sent
      */
     adaptMessageComponentToDiscord(msg: MsgToSend, msgToSend: any): boolean {

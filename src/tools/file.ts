@@ -5,9 +5,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
  * @param jsonFilePath path to the the json file
  * @returns data load
  */
-export function loadData<DataType>(jsonFilePath: string): DataType {
+export function loadData<DataType>(jsonFilePath: string): DataType | undefined {
     const fileContent = readFileSync(jsonFilePath, 'utf-8');
-    return JSON.parse(fileContent) as DataType;
+    if(fileContent.length!=0) {
+        return JSON.parse(fileContent) as DataType;
+    }
+    else {
+        return undefined;
+    }
 }
 
 /**

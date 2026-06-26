@@ -12,26 +12,54 @@ abstract class MapStr<ValueType> {
 
     abstract set(value: ValueType): void
 
+    /**
+     * Get map size
+     */
     get size(): number {
         return this.map.size;
     }
+
+    /**
+     * Indicate if an element is in the map
+     * @param str key to find
+     * @returns Indicate if an element is in the map
+     */
     has(str: string): boolean {
         return this.map.has(str);
     }
+    
+    /**
+     * Find an element by key
+     * @param str key to find
+     * @returns the element found
+     */
     get(str: string): ValueType {
         return this.map.get(str);
     }
+
+    /**
+     * Executes a provided function once per each key/value pair in the Map, in insertion order.
+     * @param callback function executed for each element
+     */
     forEach( callback: (value: ValueType) => void){
         this.map.forEach(callback);
     }
+
+    /**
+     * Remove an element from the map
+     * @param str key to the element to remove
+     * @returns indicate if the element is removed
+     */
     delete(str: string): boolean{
         return this.map.delete(str);
     }
 
+    /**
+     * obtain the map to the array format
+     * @returns the map to the array format
+     */
     toArr(): ValueType[] {
-        let arr: ValueType[] = [];
-        this.map.forEach( value => arr.push(value) );
-        return arr;
+        return Array.from( this.map.values() );
     }
     
 
@@ -81,12 +109,21 @@ abstract class MapStr<ValueType> {
         return valueFound;
     }
 
+    /**
+     * Get random element from the map
+     * @returns a random element
+     */
     getRandom(): ValueType {
         // [|0 ; size[|
         return Array.from( this.map.values() )[ Math.floor(Math.random() * Math.floor(this.map.size)) ];
     }
 
-    toJson(fctCondition ?: (elem: ValueType) => boolean): Array<any> {
+    /**
+     * get the map to a json format
+     * @param fctCondition condition an element
+     * @returns an array to json format
+     */
+    toJson(fctCondition?: (elem: ValueType) => boolean): Array<any> {
         let jsonArr: Array<any> = [];
         this.map.forEach(v => {
             if( fctCondition == undefined ||
@@ -96,6 +133,20 @@ abstract class MapStr<ValueType> {
             }
         });
         return jsonArr;
+    }
+
+    /**
+     * Find the first element corresponding to the condition
+     * @param fctCondition condition on the element to find
+     * @returns the first element found
+     */
+    find(fctCondition: (elem: ValueType) => boolean): ValueType | undefined {
+        for (const [_key, elem] of this.map) {
+            if(fctCondition(elem)) {
+                return elem;
+            }
+        }
+        return undefined;
     }
 }
 

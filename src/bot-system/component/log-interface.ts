@@ -1,5 +1,5 @@
 import { nowDateStr } from "../../tools/date"
-import { LogLevel } from "./component-type";
+import { LogLevel, LogLevelStr } from "./component-type";
 
 /** Interface to log with different log level
  * 
@@ -26,9 +26,9 @@ export class LogInterface {
      * @param onBotChannel indicate if the message shall be sent to the bot channel
      * @param txt the text to log
      */
-    log(componentLogLevel: number, txtLogLevel: number, onBotChannel: boolean, txt: string){
+    log(componentLogLevel: number, txtLogLevel: number, onBotChannel: boolean, message: any, ...optionalParams: any[]){
         if(txtLogLevel <= componentLogLevel){
-            let logStr = this.getLogStr(txtLogLevel, txt);
+            let logStr = this.getLogStr(txtLogLevel, message, optionalParams);
             if(txtLogLevel <= LogLevel.Error){
                 console.error( logStr );
             }
@@ -60,14 +60,18 @@ export class LogInterface {
      * @returns the log level string
      * @internal
      */
-    private getLogLevelStr(logLevel: number): string{
+    private getLogLevelStr(logLevel: LogLevel): LogLevelStr{
         switch (logLevel) {
+            case LogLevel.None:
+                return 'None';
             case LogLevel.Error:
                 return 'Error';
             case LogLevel.Warning:
                 return 'Warning';
             case LogLevel.Info:
                 return 'Info';
+            case LogLevel.Verbose:
+                return 'Verbose';
             case LogLevel.Debug:
                 return 'Debug';
             default:
@@ -82,7 +86,12 @@ export class LogInterface {
      * @returns the string ready to print
      * @internal
      */
-    private getLogStr(logLevel: number, txt: string): string{
-        return `[${nowDateStr()}][${this.#componentName}][${this.getLogLevelStr(logLevel)}] ${txt}`;
+    private getLogStr(logLevel: LogLevel, message: any, ...optionalParams: any[]): string{
+        if(optionalParams.length>1) {
+            return `[${nowDateStr()}][${this.getLogLevelStr(logLevel)}][${this.#componentName}] ${message}\n${optionalParams}`;
+        }
+        else {
+            return `[${nowDateStr()}][${this.getLogLevelStr(logLevel)}][${this.#componentName}] ${message}`;
+        }
     }
 }

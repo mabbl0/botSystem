@@ -15,8 +15,12 @@ export const enum ComponentType {
 }
 
 export const enum LogLevel {
-    Error = 1,
+    None,
+    Error,
     Warning,
     Info,
+    Verbose,
     Debug
 }
+
+export type LogLevelStr = 'Unknow' | 'None' | 'Error' | 'Warning' | 'Verbose' | 'Info' | 'Debug';

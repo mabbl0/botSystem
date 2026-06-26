@@ -55,6 +55,10 @@ export class SaveInterface {
         }
 
         let dataLoaded = loadData<ComponentSave & { data: DataType }>(this.#pathFile);
+        if(dataLoaded == undefined) {
+            this.#log(LogLevel.Error, `Component ${this.#componentName} try to load a file an empty file: ${this.#pathFile}`);
+            return defaultData;
+        }
         if (dataLoaded.componentName !== this.#componentName) {
             this.#log(LogLevel.Error, `Component ${this.#componentName} try to load a file to an other component: ${dataLoaded.componentName} - ${this.#pathFile}`);
             return defaultData;
