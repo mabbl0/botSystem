@@ -50,7 +50,8 @@ export class Modal extends MessageComponent implements MsgComponentInteractive {
      * @returns wanted component choice
      */
     get1Choice<ChoiceType>(interaction: Interaction, componentIndication: ChoiceIndication, defaultChoice: ChoiceType): ChoiceType {
-        let choicesArr = interaction.getChoice<ModalChoiceData[]>([]);
+        // TODO: add param option with: noEmptyArray?: boolean
+		let choicesArr = interaction.getChoice<ModalChoiceData[]>([]);
         
         if((componentIndication as TypeChoiceIndication).type != undefined) {
             // research by type
