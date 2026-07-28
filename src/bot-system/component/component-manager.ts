@@ -56,7 +56,7 @@ export class ComponentManager extends UnitComponent {
 
     // Initiate a component indicate in botSystem configuration
     initComponent(componentPath: ComponentPath) {
-        const ComponentClass = require(resolve(this.bsConf.components.srcDir + componentPath.path));
+        const ComponentClass = require(resolve(this.bsConf.components.distDir + componentPath.path));
         if (ComponentClass && ComponentClass.default) {
             this.componentArr.push(new ComponentClass.default(componentPath.name));
 
@@ -79,7 +79,7 @@ export class ComponentManager extends UnitComponent {
 
     // Initiate a extension connected to a component indicate in the configuration
     initExtension(component: Component, extensionPath: UnitPath){
-        const ExtensionClass = require(resolve(this.bsConf.components.srcDir + extensionPath.path));
+        const ExtensionClass = require(resolve(this.bsConf.components.distDir + extensionPath.path));
         if(ExtensionClass && ExtensionClass.default) {
             component.extensionList.push( 
                 new ExtensionClass.default(component, extensionPath.name) 

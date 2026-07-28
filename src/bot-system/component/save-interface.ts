@@ -9,6 +9,7 @@ interface ComponentSave {
     saveFileVersion: number
 }
 
+/** Interface to load and save the component save file */
 export class SaveInterface {
     #componentName: string
     #canBeSave: boolean

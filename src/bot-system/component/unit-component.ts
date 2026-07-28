@@ -4,8 +4,14 @@ import { EventInterface } from "../event/event-interface";
 import { Unit } from "./unit";
 
 export abstract class UnitComponent extends Unit {
+
+    /** Interface to subcribe to a event, or add a 'wake up on date' event */
     eventInterface: EventInterface
+    
+    /** Interface to add text command or slash command */
     cmdInterface: CommandInterface
+
+    /** Interface to create modal or message component */
     commInterface: CommInterface
 
     constructor(name: string, description: string){
@@ -21,7 +27,10 @@ export abstract class UnitComponent extends Unit {
     
     /*** Component Initialization Methods ***/
 
-    // Component boot. Bot api may be not connected
+    /** Component boot
+     * Bot api may be not connected
+     * Sub the BootConnectedEvent, for a boot after api connexion
+    */
     boot(){
     }
 }

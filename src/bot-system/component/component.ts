@@ -5,11 +5,12 @@ import { SaveInterface } from './save-interface'
 import { UnitComponent } from './unit-component'
 
 export abstract class Component extends UnitComponent {
-    /** @internal */
+    /** component configuration */
     conf: ComponentConf
-    /** @internal */
+    /** list of the component's extension */
     extensionList: Array<Extension<Component>>
     
+    /** Interface to load and save the component save file */
     protected saveInterface: SaveInterface
 
     /**

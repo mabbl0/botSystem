@@ -1,6 +1,7 @@
 import { Prop, PropAccess, PropOption } from "./property";
 import { MethodInterface } from "../method/method-interface";
 
+/** Interface to add property or get property from other component */
 export class PropInterface {
     #componentName: string
     #mthInterface: MethodInterface

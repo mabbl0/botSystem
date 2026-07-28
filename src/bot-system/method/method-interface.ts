@@ -1,6 +1,7 @@
 import { ComponentType } from "../component/component-type"
 import { MethodOption, MthAddPrototype, MthGetPrototype, MthInitPrototype } from "./method-type"
 
+/** Interface to add or get form the others components */
 export class MethodInterface {
     #componentName: string
     #ptrType: {value: ComponentType}

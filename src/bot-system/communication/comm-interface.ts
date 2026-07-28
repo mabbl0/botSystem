@@ -2,7 +2,7 @@ import { MethodInterface } from "../method/method-interface";
 import { MessageComponent } from "./message-component/message-component";
 import { Modal, ModalBase } from "./message-component/modal";
 
-
+/** Interface to create modal or message component */
 export class CommInterface {
     #componentName: string
     #mthInterface: MethodInterface

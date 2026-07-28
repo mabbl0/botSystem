@@ -10,7 +10,7 @@ type AddTxtCmdPrototype = (txtCmdName: string, ownerName: string, description: s
 type AddSlashCmdPrototype = (slashCmdName: string, ownerName: string, description: string, fct: (interaction: Interaction) => void, args?: Array<InteractionArgument>, option?: SlashCmdOption) => void;
 
 
-/*** interface Class to help componenent to add txtCmd and slashCmd ***/
+/** Interface to add text command or slash command */
 export class CommandInterface {
     #unit: Unit
     #propBsState: PropAccess<BotSystemState>

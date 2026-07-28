@@ -10,8 +10,11 @@ export interface ComponentPath extends UnitPath {
 }
 
 export interface ComponentsConf {
-    srcDir: string,
+    /** path to the dist directory */
+    distDir: string,
+    /** path to the component configuration directory */
     confPath: string,
+    /** list of the components to load */
     componentList: Array<ComponentPath>
 }
 

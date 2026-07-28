@@ -11,11 +11,14 @@ export abstract class Unit {
     readonly name: string
     readonly description: string
     #ptrType: {value: ComponentType}
+    /** property to indicate the log level of the component */
     propLogLevel: Prop<LogLevel>
     #propLogOnBotChannel: Prop<boolean>
 
-    mthInterface: MethodInterface
     #logInterface: LogInterface
+    /** Interface to add or get form the others components */
+    mthInterface: MethodInterface
+    /** Interface to add property or get property from other component */
     propInterface: PropInterface
 
     /**
@@ -87,25 +90,25 @@ export abstract class Unit {
 
     /*** Log Methods ***/
 
-    // log with log level: 1 error ; 2 info ; 3 debug
-    log(logLevel: number, txt: string){
+    /** log a message */
+    log(logLevel: LogLevel, txt: string){
         this.#logInterface.log( this.propLogLevel.value, logLevel, this.#propLogOnBotChannel.value, txt);
     }
     // log with error log level
     logError(txt: string){
-        this.log(LogLevel.Error,txt);
+        this.log(LogLevel.Error, txt);
     }
     // log with error log level
     logWarning(txt: string){
-        this.log(LogLevel.Warning,txt);
+        this.log(LogLevel.Warning, txt);
     }
     // log with info log level
     logInfo(txt: string){
-        this.log(LogLevel.Info,txt);
+        this.log(LogLevel.Info, txt);
     }
     // log with debug log level
     logDebug(txt: string){
-        this.log(LogLevel.Debug,txt);
+        this.log(LogLevel.Debug, txt);
     }
 
     /**

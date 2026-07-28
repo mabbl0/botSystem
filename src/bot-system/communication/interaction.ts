@@ -66,11 +66,35 @@ export interface InteractionArgumentValue {
 /*** Interaface Bot System Use ***/
 
 export interface Interaction extends CommunicationBase<Message> {
+    /** the name of the interaction */
     name: string
 
+    /**
+     * Defer the reply
+     */
     deferAns(): void
+    
+    /**
+     * return a argument value from an interaction
+     * @param name argument name
+     * @param dafaultValue default value of the argument.
+     * @returns return the argument value, with its default value if the argument not specify by the user 
+     */
     getArg<ArgValueType>(name: string, dafaultValue?: ArgValueType): ArgValueType
+    
+    /**
+     * return all the arguments values from the interaction
+     * @param defaultArgs default value of the arguments. Also usefull to get argument name by the object key
+     * @returns return the arguments, with their default value if argument not specify by the user 
+     */
     getArguments<ArgsInterface extends { [key: string]: any }>(defaultArgs: ArgsInterface): ArgsInterface
+    
+    /**
+     * return the choices made in the interaction without argument
+     * (msg component str select, modal, .. )
+     * @param defaultChoice the choice by default
+     * @returns the choices made in the interaction
+     */
     getChoice<ChoiceType>(defaultChoice: ChoiceType): ChoiceType
 }
 
@@ -180,14 +204,19 @@ export class InteractionCore implements Interaction {
         return defaultChoice;
     }
 
-    // copy the interaction
+    /**
+     * Copy the interaction
+     * @returns the interaction copied
+     */
     getCopy(): Interaction {
         let newInteract = new InteractionCore();
         newInteract.copyContent(this);
         return newInteract;
     }
 
-    // defer the reply
+    /**
+     * Defer the reply
+     */
     deferAns() {
         this.commFunction.commActionApi(CommunicationAction.InteractionDefer, undefined, this.interactApi, false);
     }

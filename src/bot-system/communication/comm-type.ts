@@ -34,6 +34,12 @@ export interface CommunicationBase<PromiseReplyType> {
     channel: Channel
     date: number // in ms since 1970
 
+    /**
+     * Reply to a communication
+     * @param msg message to send
+     * @param withReturn indicate to get a promise with the new message sent
+     * @returns a promise resolve when the message is sent if askeed
+     */
     reply(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<PromiseReplyType>
     edit(msg: string | MsgToSend | MessageComponent, withReturn?: boolean): CommReturn<PromiseReplyType>
 }

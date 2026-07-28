@@ -4,6 +4,7 @@ import { MsgToSend } from "../communication/comm-type"
 import { WakeupDateEvent, WakeupDateOption } from "./wakeup-date-event"
 import { Message } from "../communication/message"
 
+/** Interface to subcribe to a event, or add a 'wake up on date' event */
 export class EventInterface {
     #componentName: string
     #mthInterface: MethodInterface
