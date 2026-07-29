@@ -1,16 +1,19 @@
 import { CommunicationBase} from "../comm-type";
 import { UnitComponent } from "../../component/unit-component";
-import { TxtCmdOption, SlashCmdOption } from "./command-type";
+import { TxtCmdOption, SlashCmdOption, MsgContextMenu, UserContextMenu, ContextMenuOption } from "./command-type";
 import { MapName } from "../../../tools/collection/map";
 import { SlashCmd, TxtCmd } from "./command-type";
 import { InteractionRecycled, Interaction, InteractionArgument, InteractionArgumentType } from "../interaction";
 import { Message } from "../message";
+import { User } from "../../user/user";
 
 /** @internal */
 export class CommandManager extends UnitComponent {
     #txtCmdArray: MapName<TxtCmd>
     #txtCmdNotInRunArray: MapName<TxtCmd>
     #slashCmdArray: MapName<SlashCmd>
+    #msgContextMenuArray: MapName<MsgContextMenu>
+    #userContextMenuArray: MapName<UserContextMenu>
 
     #_botApiCmdUpdate: () => void;
 
@@ -19,9 +22,13 @@ export class CommandManager extends UnitComponent {
         this.#txtCmdArray = new MapName<TxtCmd>();
         this.#txtCmdNotInRunArray = new MapName<TxtCmd>();
         this.#slashCmdArray = new MapName<SlashCmd>();
+        this.#msgContextMenuArray = new MapName<MsgContextMenu>();
+        this.#userContextMenuArray = new MapName<UserContextMenu>();
 
         this.mthInterface.addMethod("addTxtCmd", this.addTxtCmd.bind(this));
         this.mthInterface.addMethod("addSlashCmd", this.addSlashCommand.bind(this));
+        this.mthInterface.addMethod("addMsgContextMenu", this.addMsgContextMenu.bind(this));
+        this.mthInterface.addMethod("addUserContextMenu", this.addUserContextMenu.bind(this));
 
         this.addTxtCmd("updateCmd", this.name, "update the bot commands",
             this.updateBotApiCommands.bind(this), { adminOnly: true });
@@ -145,7 +152,6 @@ export class CommandManager extends UnitComponent {
      * @param slashCmdName name of the slash command to add
      * @param ownerName component name which add this slashCmd
      * @param description description of the command
-     * @param argument arguments description of the command
      * @param fct pointer function to execute
      * @param option option for the slash command
      */
@@ -169,6 +175,68 @@ export class CommandManager extends UnitComponent {
 
         this.logInfo(`slashCmd '${slashCmdFound.name}' executed by ${interaction.author.name} for ${slashCmdFound.ownerName}`);
         slashCmdFound.fct(interaction);
+    }
+
+    /*** Context Menu ***/
+
+    /**
+     * Add a message context menu
+     * @param msgConextMenuName name of the message context menu to add
+     * @param ownerName component name which add this message context menu
+     * @param description description of the command
+     * @param fct pointer function to execute
+     * @param option option for the message context menu
+     */
+    addMsgContextMenu(msgConextMenuName: string, ownerName: string, description: string, fct: (interaction: Interaction, message: Message) => void, option?: ContextMenuOption) {
+        this.logInfo(`${ownerName} add msgContextMenu: '${msgConextMenuName}'`);
+        this.#msgContextMenuArray.set(
+            new MsgContextMenu(msgConextMenuName, ownerName, description, fct, (option != undefined) ? option : {})
+        );
+    }
+
+    // find, check, then execute a message context menu command
+    execMsgContextMenu(interaction: InteractionRecycled) {
+        let msgConextMenuFound = this.#msgContextMenuArray.get(interaction.name);
+        if (!msgConextMenuFound)
+            return;
+
+        if (msgConextMenuFound.option.adminOnly && !interaction.author.admin) {
+            this.logInfo(`${interaction.author.name} try to execute a msg context menu admin cmd: '${msgConextMenuFound.name}'`);
+            return;
+        }
+
+        this.logInfo(`msgConextMenu '${msgConextMenuFound.name}' executed by ${interaction.author.name} for ${msgConextMenuFound.ownerName}`);
+        msgConextMenuFound.fct(interaction, interaction.choice as Message);
+    }
+
+    /**
+     * Add a user context menu
+     * @param userConextMenuName name of the user context menu to add
+     * @param ownerName component name which add this user context menu
+     * @param description description of the command
+     * @param fct pointer function to execute
+     * @param option option for the user context menu
+     */
+    addUserContextMenu(userConextMenuName: string, ownerName: string, description: string, fct: (interaction: Interaction, user: User) => void, option?: ContextMenuOption) {
+        this.logInfo(`${ownerName} add userContextMenu: '${userConextMenuName}'`);
+        this.#userContextMenuArray.set(
+            new UserContextMenu(userConextMenuName, ownerName, description, fct, (option != undefined) ? option : {})
+        );
+    }
+
+    // find, check, then execute a user context menu command
+    execUserContextMenu(interaction: InteractionRecycled) {
+        let userConextMenuFound = this.#userContextMenuArray.get(interaction.name);
+        if (!userConextMenuFound)
+            return;
+
+        if (userConextMenuFound.option.adminOnly && !interaction.author.admin) {
+            this.logInfo(`${interaction.author.name} try to execute a user context menu admin cmd: '${userConextMenuFound.name}'`);
+            return;
+        }
+
+        this.logInfo(`userConextMenu '${userConextMenuFound.name}' executed by ${interaction.author.name} for ${userConextMenuFound.ownerName}`);
+        userConextMenuFound.fct(interaction, interaction.choice as User);
     }
 
 

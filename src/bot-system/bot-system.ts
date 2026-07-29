@@ -288,10 +288,11 @@ export class BotSystem extends Unit {
                 case InteractionType.SlashCmd:
                     this.#cmdManager.execSlashCmd(interaction);
                     break;
-                case InteractionType.ContextMenuUser:
-                    // TODO: ContextMenu
-                    break;
                 case InteractionType.ContextMenuMessage:
+                    this.#cmdManager.execMsgContextMenu(interaction);
+                    break;
+                case InteractionType.ContextMenuUser:
+                    this.#cmdManager.execUserContextMenu(interaction);
                     break;
                 case InteractionType.MessageComponentInteraction:
                 case InteractionType.ModalSubmit:

@@ -9,8 +9,8 @@ import { MessageComponent } from "./message-component/message-component";
 
 export const enum InteractionType {
     SlashCmd,
-    ContextMenuUser,
     ContextMenuMessage,
+    ContextMenuUser,
     MessageComponentInteraction,
     ModalSubmit
 }

@@ -11,6 +11,8 @@ import { InteractionArgumentType, InteractionRecycled, InteractionType } from ".
 import { Channel, ChannelCore } from "../bot-system/communication/channel";
 import { ModalChoiceData } from "../bot-system/communication/message-component/modal";
 import { MsgComponentType } from "../bot-system/communication/message-component/message-component-type";
+import { Role } from "../bot-system/user/role";
+import { MapNameId } from "../tools";
 
 /** @internal */
 export class EventDiscord implements EventAPI {
@@ -23,6 +25,8 @@ export class EventDiscord implements EventAPI {
 
     constructor(discordApi: DiscordInterface) {
         this.discordApi = discordApi;
+
+        this.initRoleCreateEvent();
     }
 
     /*** Method to Initiate Events ***/
@@ -33,13 +37,22 @@ export class EventDiscord implements EventAPI {
         this._msgCreationFct = msgCreationFct;
 
         this.discordApi.bot.on(Discord.Events.MessageCreate, (messageApi) => {
-            let msg = this.msgRecycler.getRecycledMessage(messageApi);
-            msg._author = this.discordApi.chat.users.get(messageApi.author.id); // replace the user from Api by the BotSystem User
-            msg._channel = this.discordApi.chat.channels.get((messageApi.channel as Discord.TextChannel).name); // replace the channel from Api by the BotSystem Channel
-            msg._date = messageApi.createdTimestamp;
-
-            this._msgCreationFct(msg);
+            this._msgCreationFct( this.getNewMsg(messageApi) );
         });
+    }
+
+    /**
+     * get a new message
+     * @param msgApi message from discord
+     * @returns the recycled message for bs
+     */
+    private getNewMsg(msgApi: Discord.Message): MessageRecycled {
+        let msg = this.msgRecycler.getRecycledMessage(msgApi);
+        msg._author = this.discordApi.chat.users.get(msgApi.author.id); // replace the user from Api by the BotSystem User
+        msg._channel = this.discordApi.chat.channels.get((msgApi.channel as Discord.TextChannel).name); // replace the channel from Api by the BotSystem Channel
+        msg._date = msgApi.createdTimestamp;
+
+        return msg;
     }
 
     // Initiate the boot event
@@ -94,6 +107,23 @@ export class EventDiscord implements EventAPI {
         });
     }
 
+    // Initiate the new role created Event
+    initRoleCreateEvent() {
+        this.discordApi.bot.on(Discord.Events.GuildRoleCreate, (roleApi) => {
+            let r: Role = roleApi as any;
+            r.users = new MapNameId<User>();
+            roleApi.members.forEach(memberApi => {
+                if (!memberApi.user.bot) {
+                    let userFound = this.discordApi.chat.users.get(memberApi.user.id);
+                    if (userFound) {
+                        r.users.set(userFound);
+                    }
+                }
+            });
+            this.discordApi.chat.roles.set(r);
+        });
+    }
+
     // Initiate the voice update event
     initVoiceUpdateEvent(userVoiceConnexionFct: (user: User) => void) {
         this.discordApi.bot.on(Discord.Events.VoiceStateUpdate, (oldState, newState) => {
@@ -122,6 +152,10 @@ export class EventDiscord implements EventAPI {
             if (interactionApi.type == Discord.InteractionType.ApplicationCommand) {
                 if (interactionApi.isChatInputCommand()) {
                     this.interactionSlashCommand(interactionApi as Discord.CommandInteraction);
+                } else if (interactionApi.isMessageContextMenuCommand()) {
+                    this.interactionMessageContextCommand(interactionApi);
+                } else if (interactionApi.isUserContextMenuCommand()) {
+                    this.interactionUserContextCommand(interactionApi);
                 }
             }
             else if (interactionApi.type == Discord.InteractionType.MessageComponent) {
@@ -132,10 +166,6 @@ export class EventDiscord implements EventAPI {
             }
         });
     }
-
-
-    // TODO: add new Role Event & add Role to a User Event
-
 
     /*** Interaction Received ***/
 
@@ -175,6 +205,26 @@ export class EventDiscord implements EventAPI {
 
             this._interactCreationFct(interact);
         }
+    }
+
+    // Receive a message context menu command
+    private interactionMessageContextCommand(interactionApi: Discord.MessageContextMenuCommandInteraction) {
+        let interact = this.getRecyclcyedInteract(interactionApi);
+        interact.type = InteractionType.ContextMenuMessage;
+        interact.name = interactionApi.commandName;
+        interact.choice = this.getNewMsg(interactionApi.targetMessage);
+
+        this._interactCreationFct(interact);
+    }
+
+    // Receive a user context menu command
+    private interactionUserContextCommand(interactionApi: Discord.UserContextMenuCommandInteraction) {
+        let interact = this.getRecyclcyedInteract(interactionApi);
+        interact.type = InteractionType.ContextMenuUser;
+        interact.name = interactionApi.commandName;
+        interact.choice = this.discordApi.chat.users.get( interactionApi.targetUser.id );
+
+        this._interactCreationFct(interact);
     }
 
     // Receive a button interaction return
@@ -230,9 +280,9 @@ export class EventDiscord implements EventAPI {
     private getChannelChoice(channelChoice: Discord.ChannelSelectMenuInteraction | Discord.SelectMenuModalData): Channel[] {
         let channelsChosen: Channel[] = [];
         channelChoice.channels?.forEach(channelApi => {
-            if(channelApi.type == Discord.ChannelType.GuildText) {
+            if (channelApi.type == Discord.ChannelType.GuildText) {
                 let channelChosen = this.discordApi.chat.channels.get(channelApi.name);
-                if(channelChosen != undefined) {
+                if (channelChosen != undefined) {
                     channelsChosen.push(channelChosen);
                 }
             }

@@ -63,3 +63,28 @@ export class SlashCmd extends CmdBase {
         this.arguments = arg;
     }
 }
+
+/** Conetx Menu command */
+export interface ContextMenuOption extends CmdBaseOption {
+}
+export class MsgContextMenu extends CmdBase {
+    fct: (interaction: Interaction, message: Message) => void
+    declare option: ContextMenuOption
+
+    constructor(name: string, ownerName: string, description: string, fct: (interaction: Interaction, message: Message) => void, option: ContextMenuOption){
+        super(name, ownerName, description, option);
+        this.fct = fct;
+        this.option = option;
+    }
+}
+export class UserContextMenu extends CmdBase {
+    fct: (interaction: Interaction, user: User) => void
+    declare option: ContextMenuOption
+
+    constructor(name: string, ownerName: string, description: string, fct: (interaction: Interaction, user: User) => void, option: ContextMenuOption){
+        super(name, ownerName, description, option);
+        this.fct = fct;
+        this.option = option;
+    }
+}
+

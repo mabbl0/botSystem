@@ -10,7 +10,7 @@ import { Interaction } from './interaction';
 import { Modal, ModalBase } from './message-component/modal';
 
 
-// TODO: remove / destroy the unsed message component
+// TODO: remove / destroy the unused message component
 
 /** @internal */
 export class CommManager extends UnitComponent {
