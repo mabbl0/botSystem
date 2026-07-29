@@ -16,7 +16,7 @@ export default class MyComponent extends Component {
 }
 ```
 
-To launch the component, indicate in the bot configuration component list, its name and its file path:
+To launch the component, indicate in the bot configuration component list its name and its file path:
 ```json
   "components": {
     "distDir": "./dist/",
@@ -29,7 +29,7 @@ To launch the component, indicate in the bot configuration component list, its n
 	]
   }
 ```
-It the `ComponentManager` from the botSystem which load and initiate your component.
+It is the `ComponentManager` from the botSystem which load and initiate your component.
 
 Your component is created with its name indicated in the configuration file, as the first parameter in its constructor call: `new MyComponent(componentConf.name)`  
 Thus, for a specific use, a same component class can be indicated several time in the configuration file, to initiate several component from the same class.
@@ -39,7 +39,7 @@ Thus, for a specific use, a same component class can be indicated several time i
 Each component can have a configuration file to initiate some component parameter at boot.  
 At boot, `ComponentManager` from boSystem initiate the component and try automatically to read its configuration file.
 
-The configuration file have to be stocked in the path indicated by the `confPath` in the bot configuration file.
+The configuration file have to be stored in the path indicated by the `confPath` in the bot configuration file.
 The configuration file have to be named with the component name, indicated in bot configuration file, follow by `-conf.json`.  
 For example, with the previous component, the component configuration file is `my-component-conf.json`, and the project organisation will be:
 ```
@@ -154,10 +154,87 @@ export default class MyComponent extends Component {
 
 # Extension
 
+The extensions are associated to one component, to complete or add features to the component.  
+Thus, the features can by easly split in differents of your project, and can be added or removed from the configuration.
+
+An extension depends to its component, but a component should be work without extension.
+
+For example extension can be use: 
+- with a tcg component where each extension is a new collection
+- to connect the component to an other one
+- to add an option to a command
+
+
+## Usage
+
+To begin a new extension, declare a class extend to `Extension` with a template to the target component class and with a `export default`:
 ```ts
-export declare abstract class Extension<ComponentType extends Component> extends UnitComponent {
+import { Component } from "bot-system";
+import MyComponent from "./my-component";
+
+export default class MyExtension extends Extension<MyComponent> {
+
+}
+```
+
+To associate the extension to its component and load it, indicate in the component extension list in the bot configuration its name and its file path:
+
+```json
+  "components": {
+    "distDir": "./dist/",
+    "confPath": "./config/bot-components/",
+    "componentList": [
+      {
+        "name": "MyComponent",
+        "path": "component-dir/my-component",
+        "extensionList": [
+          {
+            "name": "MyExtension",
+            "path": "component-dir/my-extension"
+          }
+		]
+      }
+	]
+  }
+```
+It is the `ComponentManager` from the botSystem which load and initiate the component with all its extension.
+
+To access to its component, your extension is created with its component target as the first parameter in its constructor call:  
+`new MyExtension(myComponent, extensionConf.name)`
+
+## Extension configuration
+
+As the components, the extensions can have configuration parameters.  
+However, the extensions share their configuration files with their component.
+
+Thus, for our example, the configuration parameters are stored in the `my-component-conf.json` file.
+
+## Component class declaration
+
+Extension class inherits from the same class that the Component class.
+
+```ts
+abstract class Extension {
+	readonly name: string;
+	readonly description: string;
+	/** component configuration */
 	conf: ComponentConf;
+	/** the target component */
 	component: ComponentType;
+	/** property to indicate the log level of the component */
+	propLogLevel: Prop<LogLevel>;
+
+	/** Interface to add or get form the others components */
+	mthInterface: MethodInterface;
+	/** Interface to add property or get property from other component */
+	propInterface: PropInterface;
+	/** Interface to subcribe to a event, or add a 'wake up on date' event */
+	eventInterface: EventInterface;
+	/** Interface to add text command or slash command */
+	cmdInterface: CommandInterface;
+	/** Interface to create modal or message component */
+	commInterface: CommInterface;
+
 	/**
 	 * Constructor with the component linked to the extension
 	 * @param component the component link to the extension
@@ -165,7 +242,37 @@ export declare abstract class Extension<ComponentType extends Component> extends
 	 * @param description the description of the extension
 	 */
 	constructor(component: ComponentType, extensionName: string, description: string);
+
+	/** Component boot
+	 * Bot api may be not connected
+	 * Sub the BootConnectedEvent, for a boot after api connexion
+	*/
+	boot(): void;
+
+	/** log a message */
+	log(logLevel: LogLevel, txt: string): void;
+	logError(txt: string): void;
+	logWarning(txt: string): void;
+	logInfo(txt: string): void;
+	logDebug(txt: string): void;
 }
 ```
 
-# Configuration
+## Example
+
+
+```ts
+import { Component } from "bot-system";
+import MyComponent from "./my-component";
+
+export default class MyExtension extends Extension<MyComponent> {
+
+  constructor(component: MyComponent) {
+    super(component, "MyExtension", "my first extension");
+
+
+
+  }
+}
+```
+

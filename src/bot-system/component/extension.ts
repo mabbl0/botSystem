@@ -3,7 +3,9 @@ import { ComponentConf, ComponentType } from "./component-type";
 import { UnitComponent } from "./unit-component";
 
 export abstract class Extension<ComponentType extends Component> extends UnitComponent {
+    /** component configuration */
     conf: ComponentConf
+    /** the target component */
     component: ComponentType
 
     /**
@@ -20,4 +22,6 @@ export abstract class Extension<ComponentType extends Component> extends UnitCom
         
         this.logInfo(`Extension ${this.name} created`);
     }
+
+    // TODO: add a defaultConf method
 }
