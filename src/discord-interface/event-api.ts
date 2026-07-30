@@ -25,8 +25,6 @@ export class EventDiscord implements EventAPI {
 
     constructor(discordApi: DiscordInterface) {
         this.discordApi = discordApi;
-
-        this.initRoleCreateEvent();
     }
 
     /*** Method to Initiate Events ***/
@@ -59,6 +57,7 @@ export class EventDiscord implements EventAPI {
     initBootEvent(bootFct: () => void) {
         this.discordApi.bot.once(Discord.Events.ClientReady, () => {
             this.discordApi.guild = this.discordApi.bot.guilds.cache.find(guild => guild.id == this.discordApi.discordConf.guildId);
+            this.initRoleCreateEvent();
 
             bootFct();
         });
