@@ -189,7 +189,7 @@ export class BotSystem extends Unit {
      * @internal
      */
     private bootEvent() {
-        this.#interfaceApiManager.interfaceApi.command.initCmdMap( this.#cmdManager.cmdMap );
+        this.#interfaceApiManager.interfaceApi.command.initApiCmd( this.#cmdManager.cmdMap );
         this.#commManager.initChannels(this.#interfaceApiManager.interfaceApi.chat.getChannels(), this.#commManager.commFunction );
         this.#voiceManager.initVoiceChannels(this.#interfaceApiManager.interfaceApi.chat.getVoiceChannels() );
         this.#userManager.initUsers(this.#interfaceApiManager.interfaceApi.chat.getUsers());

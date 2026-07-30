@@ -1,6 +1,4 @@
-import { BotSystemState } from "../../bot-system-type";
 import { Unit } from "../../component/unit";
-import { PropAccess } from "../../property/property";
 import { User } from "../../user/user";
 import { Interaction, InteractionArgument, stringToArgType } from "../interaction";
 import { Message } from "../message";
@@ -16,7 +14,6 @@ type AddUserCmPrototype = (userContextMenuName: string, ownerName: string, descr
 /** Interface to add text command, slash command, or context menu command */
 export class CommandInterface {
     #unit: Unit
-    #propBsState: PropAccess<BotSystemState>
     #mthAddTxtCmd: AddTxtCmdPrototype
     #mthAddSlashCmd: AddSlashCmdPrototype
     #mthAddmsgContextMenu: AddMsgCmPrototype
@@ -29,7 +26,6 @@ export class CommandInterface {
      */
     constructor(unit: Unit) {
         this.#unit = unit;
-        this.#propBsState = this.#unit.propInterface.getProp("BotSystem", "botSystemState");
 
         this.initInterface();
     }
@@ -71,10 +67,6 @@ export class CommandInterface {
      * @param option option for the slash command
      */
     addSlashCmd(slashCmdName: string, description: string, fct: (interaction: Interaction) => void, args?: Array<InteractionArgument>, option?: SlashCmdOption) {
-        if (this.#propBsState.value != BotSystemState.Start && this.#propBsState.value != BotSystemState.Initialization) {
-            this.#unit.logError('slash command has to be add in Initialization (component constructor)');
-            return;
-        }
         if (this.#mthAddSlashCmd) {
             this.#mthAddSlashCmd(slashCmdName,
                 this.#unit.name,
@@ -93,10 +85,6 @@ export class CommandInterface {
      * @param option option for the message context menu
      */
     addMsgContextMenu(msgConextMenuName: string, description: string, fct: (interaction: Interaction, message: Message) => void, option?: ContextMenuOption) {
-        if (this.#propBsState.value != BotSystemState.Start && this.#propBsState.value != BotSystemState.Initialization) {
-            this.#unit.logError('message context menu command has to be add in Initialization (component constructor)');
-            return;
-        }
         if (this.#mthAddmsgContextMenu) {
             this.#mthAddmsgContextMenu(msgConextMenuName,
                 this.#unit.name,
@@ -114,10 +102,6 @@ export class CommandInterface {
      * @param option option for the user context menu
      */
     addUserContextMenu(userConextMenuName: string, description: string, fct: (interaction: Interaction, user: User) => void, option?: ContextMenuOption) {
-        if (this.#propBsState.value != BotSystemState.Start && this.#propBsState.value != BotSystemState.Initialization) {
-            this.#unit.logError('user context menu command has to be add in Initialization (component constructor)');
-            return;
-        }
         if (this.#mthAddmsgContextMenu) {
             this.#mthAdduserContextMenu(userConextMenuName,
                 this.#unit.name,

@@ -1,5 +1,6 @@
 import { REST, Routes } from 'discord.js'
-import { SlashCmd } from "../bot-system/communication/command/command-type";
+import Discord from "discord.js"
+import { ApiCmd } from "../bot-system/communication/command/command-type";
 import { CommandAPI } from "../bot-system/interface-api/interface-api-type";
 import { MapName } from "../tools/collection/map";
 import { DiscordCmdAdapt } from "./util/discord-convert-type";
@@ -12,6 +13,7 @@ export class CommandDiscord implements CommandAPI {
     private discordApi: DiscordInterface
     // Map<discordCmd.name, DiscordCmdAdapt>
     cmdMap: MapName<DiscordCmdAdapt>
+    apiCmd: ApiCmd
 
     constructor(discordApi: DiscordInterface) {
         this.discordApi = discordApi;        
@@ -20,14 +22,13 @@ export class CommandDiscord implements CommandAPI {
     /**** Method for Discord Command ***/
 
     // Initiate and adapte cmd form BotSystem to Discord
-    initCmdMap(slashCmds: MapName<SlashCmd>){
-        if(this.cmdMap==undefined){
-            this.cmdMap = new MapName<DiscordCmdAdapt>();
+    initApiCmd(apiCmd: ApiCmd){
+        this.apiCmd = apiCmd;
 
-            slashCmds.forEach(slashCmd => {
-                this.cmdMap.set(new DiscordCmdAdapt(slashCmd));
-            });
-        }
+        this.cmdMap = new MapName<DiscordCmdAdapt>();
+        apiCmd.slashCmd.forEach(slashCmd => {
+            this.cmdMap.set(new DiscordCmdAdapt(slashCmd));
+        });
     }
 
     // update the discord bot commands
@@ -40,7 +41,22 @@ export class CommandDiscord implements CommandAPI {
         this.cmdMap.forEach( (cmdAdapt) =>
             jsonDiscordGuildCmd.push(cmdAdapt.discordCmd)
         );
+        this.apiCmd.msgContextMenu.forEach( (msgContextMenu) => 
+            jsonDiscordGuildCmd.push({
+                name: msgContextMenu.name,
+                description: msgContextMenu.description,
+                type: Discord.ApplicationCommandType.Message
+            })
+        );
+        this.apiCmd.userContextMenu.forEach( (userContextMenu) => 
+            jsonDiscordGuildCmd.push({
+                name: userContextMenu.name,
+                description: userContextMenu.description,
+                type: Discord.ApplicationCommandType.User
+            })
+        );
 
+        
         const rest = new REST().setToken(this.discordApi.discordConf.botToken);
         // guild command
 		rest.put(

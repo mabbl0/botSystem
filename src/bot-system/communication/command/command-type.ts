@@ -1,3 +1,4 @@
+import { MapName } from "../../../tools"
 import { User } from "../../user/user"
 import { Interaction, InteractionArgument } from "../interaction"
 import { Message } from "../message"
@@ -64,7 +65,7 @@ export class SlashCmd extends CmdBase {
     }
 }
 
-/** Conetx Menu command */
+/** Context Menu command */
 export interface ContextMenuOption extends CmdBaseOption {
 }
 export class MsgContextMenu extends CmdBase {
@@ -88,3 +89,8 @@ export class UserContextMenu extends CmdBase {
     }
 }
 
+export interface ApiCmd {
+    slashCmd: MapName<SlashCmd>
+    msgContextMenu: MapName<MsgContextMenu>
+    userContextMenu: MapName<UserContextMenu>
+}

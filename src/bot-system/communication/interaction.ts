@@ -39,7 +39,7 @@ export function stringToArgType(argTypeStr: string): InteractionArgumentType {
     return InteractionArgumentType.Unkown;
 }
 
-interface InteractionChoice {
+export interface InteractionChoice {
     name: string
     value: any
 }

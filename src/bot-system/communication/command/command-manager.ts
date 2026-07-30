@@ -1,6 +1,6 @@
 import { CommunicationBase} from "../comm-type";
 import { UnitComponent } from "../../component/unit-component";
-import { TxtCmdOption, SlashCmdOption, MsgContextMenu, UserContextMenu, ContextMenuOption } from "./command-type";
+import { TxtCmdOption, SlashCmdOption, MsgContextMenu, UserContextMenu, ContextMenuOption, ApiCmd } from "./command-type";
 import { MapName } from "../../../tools/collection/map";
 import { SlashCmd, TxtCmd } from "./command-type";
 import { InteractionRecycled, Interaction, InteractionArgument, InteractionArgumentType } from "../interaction";
@@ -15,7 +15,7 @@ export class CommandManager extends UnitComponent {
     #msgContextMenuArray: MapName<MsgContextMenu>
     #userContextMenuArray: MapName<UserContextMenu>
 
-    #_botApiCmdUpdate: () => void;
+    #botApiCmdUpdate: () => void;
 
     constructor() {
         super("CommandManager", "Manage BotSystem Command");
@@ -127,21 +127,25 @@ export class CommandManager extends UnitComponent {
     /*** Update Bot Api Commands ***/
 
     // give all commands: guild, global, slashCmd, contextCmd, ..
-    get cmdMap(): MapName<SlashCmd> {
-        return this.#slashCmdArray;
+    get cmdMap(): ApiCmd {
+        return {
+            slashCmd: this.#slashCmdArray,
+            msgContextMenu: this.#msgContextMenuArray,
+            userContextMenu: this.#userContextMenuArray
+        };
     }
 
     set botApiCmdUpdate(fct: () => void) {
-        if (this.#_botApiCmdUpdate == undefined) { // set once
-            this.#_botApiCmdUpdate = fct;
+        if (this.#botApiCmdUpdate == undefined) { // set once
+            this.#botApiCmdUpdate = fct;
         }
     }
 
     // call the interfaceApi to update the bot slash commands
     updateBotApiCommands() {
         this.logInfo("Update Bot Api Commands");
-        this.#_botApiCmdUpdate();
-        if (this.#_botApiCmdUpdate != undefined) {
+        this.#botApiCmdUpdate();
+        if (this.#botApiCmdUpdate != undefined) {
         }
     }
 

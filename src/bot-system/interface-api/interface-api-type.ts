@@ -1,7 +1,7 @@
 import { User } from "../user/user";
 import { MapName, MapNameId } from "../../tools/collection/map";
 import { Recycler } from "../../tools/collection/recycler";
-import { SlashCmd } from "../communication/command/command-type";
+import { ApiCmd } from "../communication/command/command-type";
 import { CommReturn, CommunicationAction, MsgToSend } from "../communication/comm-type";
 import { PlayAudioOption, VoiceChannel } from "../communication/voice/voice-channel";
 import { MessageRecycled } from "../communication/message";
@@ -73,7 +73,7 @@ export interface ChatAPI {
 /** @internal */
 export interface CommandAPI {
     /*** Method for Command ***/
-    initCmdMap(slashCmds: MapName<SlashCmd>): void
+    initApiCmd(apiCmd: ApiCmd): void
     updateBotCommands(): void
 }
 

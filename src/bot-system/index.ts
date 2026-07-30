@@ -1,7 +1,7 @@
 /*** Communication ***/
 export {Channel} from './communication/channel'
 export {VoiceChannel, PlayAudioOption} from './communication/voice/voice-channel'
-export {Interaction, InteractionArgumentType} from './communication/interaction'
+export {Interaction, InteractionArgumentType, InteractionArgument, InteractionChoice} from './communication/interaction'
 export {Message} from './communication/message'
 export * from './communication/comm-type'
 export {CommInterface} from './communication/comm-interface'
