@@ -106,7 +106,7 @@ export class Modal extends MessageComponent implements MsgComponentInteractive {
         for (let i = 0; i < choicesArr.length; i++) {
             if(choicesArr[i].id == idComponent) {
                 if(choicesArr[i].choice != undefined) {
-                    if(option.noEmptyArray && choicesArr[i].choice.length == 0) {
+                    if(option?.noEmptyArray && choicesArr[i].choice.length == 0) {
                         return defaultChoice;
                     }
                     return choicesArr[i].choice;
