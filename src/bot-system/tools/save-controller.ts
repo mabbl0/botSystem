@@ -9,8 +9,8 @@ export class SaveController<DataType> {
 
     #nbSaveAsked: number
     #nbAskToSave: number
-    #saveCooldown: number // in ms
-    #saveAfterAskTime: number // in ms
+    #saveCooldown: number | undefined // in ms
+    #saveAfterAskTime: number | undefined // in ms
     #hasCurrentTimeoutSave: boolean
 
     /**
@@ -39,11 +39,16 @@ export class SaveController<DataType> {
     askToSave(){
         this.#nbSaveAsked += 1;
         if(this.#nbSaveAsked >= this.#nbAskToSave) {
-            if(Date.now() - this.#saveInterface.lastDateSave > this.#saveCooldown) {
+            if(this.#saveCooldown == undefined) {
                 this.save();
             }
+            else {
+                if(Date.now() - this.#saveInterface.lastDateSave > this.#saveCooldown) {
+                    this.save();
+                }
+            }
         }
-        else if(!this.#hasCurrentTimeoutSave) {
+        else if(!this.#hasCurrentTimeoutSave && this.#saveAfterAskTime!=undefined) {
             // try to save after X time
             setTimeout(() => {
                 this.#hasCurrentTimeoutSave = false;

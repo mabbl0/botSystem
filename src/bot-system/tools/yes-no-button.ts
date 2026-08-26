@@ -6,16 +6,16 @@ export class YesNoButtons<TArgs> {
     /** the message component */
     msgComponent: MessageComponent
     /** the text question. 'are you sur?' by default */
-    questionText: string
+    questionText: string | undefined
     /** the arguments for the callbacks */
-    args: TArgs
+    args: TArgs | undefined
 
     /** Callback when the user answered yes */
-    yesCallback: (interaction: Interaction, args?: TArgs) => void
+    yesCallback: undefined | ((interaction: Interaction, args?: TArgs) => void)
     /** Callback when the user answered no */
-    noCallback: (interaction: Interaction, args?: TArgs) => void
+    noCallback: undefined | ((interaction: Interaction, args?: TArgs) => void)
     /** Callback if the user has not answered */
-    noAnswerCallback: (args?: TArgs) => void
+    noAnswerCallback: undefined | ((args?: TArgs) => void)
 
     /** indicate how many time have the user to answer. 10 min by default. in ms */
     answerDelay: number
@@ -62,7 +62,7 @@ export class YesNoButtons<TArgs> {
         // manage no answer case
         if(this.noAnswerCallback!=undefined) {
             setTimeout((ynButton) => {
-                if(ynButton.hasAnswered) {
+                if(ynButton.hasAnswered && ynButton.noAnswerCallback!=undefined) {
                     ynButton.noAnswerCallback(this.args)
                 }
             }, this.answerDelay, this);
@@ -74,12 +74,16 @@ export class YesNoButtons<TArgs> {
     /** @internal */
     private yesButton(interaction: Interaction) {
         this.hasAnswered = true;
-        this.yesCallback(interaction, this.args);
+        if(this.yesCallback!=undefined) {
+            this.yesCallback(interaction, this.args);
+        }
     }
     /** @internal */
     private noButton(interaction: Interaction) {
         this.hasAnswered = true;
-        this.noCallback(interaction, this.args);
+        if(this.noCallback!=undefined) {
+            this.noCallback(interaction, this.args);
+        }
     }
 }
 

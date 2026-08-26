@@ -99,10 +99,10 @@ export class AdaptCommDiscord implements AdaptCommAPI {
 
     /**
      * Adapt the message option to discord message
-     * @param msgOption thes message option
+     * @param msgOption the message option
      * @param listMsgToSend the list of message to send
      */
-    adaptMessageOption(msgOption: MsgOption, msgToSend: any, nextMsgToSend: any[]) {
+    adaptMessageOption(msgOption: MsgOption | undefined, msgToSend: any, nextMsgToSend: any[]) {
         msgToSend.flags = 0;
         if (msgOption?.ephemeral) {
             msgToSend.flags += Discord.MessageFlags.Ephemeral;
@@ -121,7 +121,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
      * Send the message
      * @param action the action to do (send, reply, edit)
      * @param msgToSend the message to send
-     * @param apiObject the api object (cahnnel, message, interaction)
+     * @param apiObject the api object (channel, message, interaction)
      * @param withReturn indicate if a return should be sent 
      */
     sendMsg<PromiseReplyType>(action: CommunicationAction, msgBS: MsgToSend, msgToSend: any, nextMsgToSend: any[], apiObject: any, withReturn: boolean): CommReturn<PromiseReplyType> {
@@ -285,7 +285,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
             if (withReturn || isMsgcNeededMsg) {
                 return new Promise<Message>((resolve) => {
                     (apiObject as Discord.MessageComponentInteraction).showModal(msgToSend, { withResponse: true }).then((_interactionModalApi) => {
-                        // the showModal promise return is unexploitable
+                        // the showModal promise return is un-exploitable
                         // so build and return a message from the apiObject, which is here a interaction
                         // a interaction button (with a message) or interaction slash command (without message)
                         resolve(this.newMsgFromDiscordResponse(apiObject));
@@ -299,7 +299,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
         else {
             // can not send direct modal
             // So send a message with a button to send the modal
-            const buttonShowModalid = 'showModal_' + this.countButtonShowModal;
+            const buttonShowModalId = 'showModal_' + this.countButtonShowModal;
             const msgWithModalButton: any = {
                 flags: Discord.MessageFlags.IsComponentsV2 + Discord.MessageFlags.Ephemeral,
                 components: [{
@@ -307,13 +307,13 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                     components: [{
                         type: Discord.ComponentType.Button,
                         style: Discord.ButtonStyle.Primary,
-                        customId: buttonShowModalid,
+                        customId: buttonShowModalId,
                         label: 'show modal'
                     }]
                 }]
             };
             let collectorOption: Discord.MessageChannelCollectorOptionsParams<Discord.ComponentType.Button> = {
-                filter: (interaction => interaction.customId == buttonShowModalid),
+                filter: (interaction => interaction.customId == buttonShowModalId),
                 time: 600_000 // 10min to click and show the modal
             };
             switch (action) {
@@ -361,7 +361,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                     break;
                 case CommunicationAction.InteractionEdit:
                     return new Promise<Message>((resolve) => {
-                        (apiObject as Discord.MessageComponentInteraction).channel.createMessageComponentCollector(collectorOption)
+                        (apiObject as Discord.MessageComponentInteraction).channel?.createMessageComponentCollector(collectorOption)
                             .on('collect', async modalButtonInteraction => {
                                 modalButtonInteraction.showModal(msgToSend, { withResponse: true }).then((_interactionModalApi) => {
                                     resolve(this.newMsgFromDiscordResponse(modalButtonInteraction.message));
@@ -389,16 +389,16 @@ export class AdaptCommDiscord implements AdaptCommAPI {
      * @returns indicate if it is a modal sent
      */
     adaptMessageComponentToDiscord(msg: MsgToSend, msgToSend: any): boolean {
-        msg.components.prepareToSend();
-        if (msg.components.displayType == MsgComponentDisplayType.Message) {
+        msg.components?.prepareToSend();
+        if (msg.components?.displayType == MsgComponentDisplayType.Message) {
             msgToSend.flags += Discord.MessageFlags.IsComponentsV2;
         }
-        else if (msg.components.displayType == MsgComponentDisplayType.Modal) {
+        else if (msg.components?.displayType == MsgComponentDisplayType.Modal) {
             msgToSend.customId = msg.components.id;
             msgToSend.title = 'modal';
         }
 
-        msgToSend.components = (msg.components.adapter as MsgComponentAdapter).msgcAdapted;
+        msgToSend.components = (msg.components?.adapter as MsgComponentAdapter).msgcAdapted;
 
         // no content if flags componentV2
         if (msg.content != undefined) {
@@ -407,7 +407,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
                 content: msg.content
             });
         }
-        return msg.components.displayType == MsgComponentDisplayType.Modal;
+        return msg.components?.displayType == MsgComponentDisplayType.Modal;
     }
 
 
@@ -426,7 +426,7 @@ export class AdaptCommDiscord implements AdaptCommAPI {
         if ((commApi as Discord.ChatInputCommandInteraction).commandType == Discord.ApplicationCommandType.ChatInput) {
             let interactionCommand = commApi as Discord.ChatInputCommandInteraction;
             newMsg._author = this.discordApi.chat.users.get(interactionCommand.user.id);
-            newMsg._channel = this.discordApi.chat.channels.get(interactionCommand.channel.name);
+            newMsg._channel = this.discordApi.chat.channels.get(interactionCommand.channel?.name);
             newMsg._date = interactionCommand.createdTimestamp;
             // no message from this interaction ...
         } else if ((commApi as Discord.Message).cleanContent != undefined) {

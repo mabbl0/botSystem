@@ -41,7 +41,7 @@ At boot, `ComponentManager` from boSystem initiate the component and try automat
 
 The configuration file have to be stored in the path indicated by the `confPath` in the bot configuration file.
 The configuration file have to be named with the component name, indicated in bot configuration file, follow by `-conf.json`.  
-For example, with the previous component, the component configuration file is `my-component-conf.json`, and the project organisation will be:
+For example, with the previous component, the component configuration file is `my-component-conf.json`, and the project organization will be:
 ```
 |-config
     |-bot-conf
@@ -87,7 +87,7 @@ abstract class Component {
 	mthInterface: MethodInterface;
 	/** Interface to add property or get property from other component */
 	propInterface: PropInterface;
-	/** Interface to subcribe to a event, or add a 'wake up on date' event */
+	/** Interface to subscribe to a event, or add a 'wake up on date' event */
 	eventInterface: EventInterface;
 	/** Interface to add text command or slash command */
 	cmdInterface: CommandInterface;
@@ -110,7 +110,7 @@ abstract class Component {
 
 	/** Component boot
 	 * Bot api may be not connected
-	 * Sub the BootConnectedEvent, for a boot after api connexion
+	 * Sub the BootConnectedEvent, for a boot after api connection
 	*/
 	boot(): void;
 
@@ -123,7 +123,7 @@ abstract class Component {
 }
 ```
 
-For more details about the 6 interfaces check the documention.
+For more details about the 6 interfaces check the documentation.
 
 ## Example
 
@@ -146,7 +146,7 @@ export default class MyComponent extends Component {
             nbMsgLimit: 8
         });
 
-        /** Continue to intiate the component, with the interfaces */
+        /** Continue to initiate the component, with the interfaces */
 	}
 }
 ```
@@ -155,7 +155,7 @@ export default class MyComponent extends Component {
 # Extension
 
 The extensions are associated to one component, to complete or add features to the component.  
-Thus, the features can by easly split in differents of your project, and can be added or removed from the configuration.
+Thus, the features can by easily split in different of your project, and can be added or removed from the configuration.
 
 An extension depends to its component, but a component should be work without extension.
 
@@ -228,7 +228,7 @@ abstract class Extension {
 	mthInterface: MethodInterface;
 	/** Interface to add property or get property from other component */
 	propInterface: PropInterface;
-	/** Interface to subcribe to a event, or add a 'wake up on date' event */
+	/** Interface to subscribe to a event, or add a 'wake up on date' event */
 	eventInterface: EventInterface;
 	/** Interface to add text command or slash command */
 	cmdInterface: CommandInterface;
@@ -245,7 +245,7 @@ abstract class Extension {
 
 	/** Component boot
 	 * Bot api may be not connected
-	 * Sub the BootConnectedEvent, for a boot after api connexion
+	 * Sub the BootConnectedEvent, for a boot after api connection
 	*/
 	boot(): void;
 
