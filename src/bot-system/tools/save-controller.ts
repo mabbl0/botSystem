@@ -29,6 +29,8 @@ export class SaveController<DataType> {
         this.#saveCooldown = saveCooldown;
         this.#saveAfterAskTime = saveAfterAskTime;
         this.#hasCurrentTimeoutSave = false;
+
+        //console.log("nbAskToSave:", nbAskToSave, "; saveCooldown:", saveCooldown, "; saveAfterAskTime:", saveAfterAskTime);
     }
 
     /**
@@ -48,7 +50,7 @@ export class SaveController<DataType> {
                 if(this.#nbSaveAsked>0){
                     this.save();
                 }
-            }, Date.now() + this.#saveAfterAskTime);
+            }, this.#saveAfterAskTime);
             this.#hasCurrentTimeoutSave = true;
         }
     }
