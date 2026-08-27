@@ -4,12 +4,18 @@ import { Button } from "../communication/message-component/button";
 import { ButtonRow } from "../communication/message-component/button-row";
 import { MessageComponent } from "../communication/message-component/message-component";
 
+export interface BookChapter {
+    chapter: string,
+    index: number
+}
 
 export class Book<DataType extends {toString?(): string}> {
     /** the data to print */
     dataArray: DataType[]
     /** nb data per page */
     readonly dataPerPage: number
+    /** chapters to split the elements */
+    readonly chapters: BookChapter[] | undefined
     /** nb maximum pages */
     readonly nbPageMax: number
     /** current pages */
@@ -19,15 +25,18 @@ export class Book<DataType extends {toString?(): string}> {
     private txtPage: TextMsgComponent
     private buttonRow: ButtonRow
 
-    constructor(msgComponent: MessageComponent, dataArray: DataType[], dataPerPage: number = 8) {
+    constructor(msgComponent: MessageComponent, tittle: string, dataArray: DataType[], chapters?: BookChapter[], dataPerPage: number = 8) {
         this.dataArray = dataArray;
         this.dataPerPage = dataPerPage;
+        this.chapters = chapters;
         this.nbPageMax = 0;
         for (let i = 0 ; i < this.dataArray.length ; i += this.dataPerPage) {
             this.nbPageMax += 1;
         }
 
         this.msgComponent = msgComponent;
+        msgComponent.addText("# " + tittle);
+        msgComponent.addSeparator();
         this.txtPage = msgComponent.addText(this.showPage(0));
         this.buttonRow = msgComponent.addButtonRow([
             {label: "<-", interactionFct: this.goToLeftButton.bind(this), option: {disable: true}},
@@ -48,6 +57,13 @@ export class Book<DataType extends {toString?(): string}> {
         let firstPageElem = pageToShow*this.dataPerPage;
         let lastPageElem = firstPageElem + this.dataPerPage;
         for (let i = firstPageElem ;  i < lastPageElem && i < this.dataArray.length ; i++) {
+            if(this.chapters != undefined ) {
+                let chapt = this.chapters.find( c => c.index == i);
+                if(chapt != undefined) {
+                    strToShowed += "## " + chapt.chapter + '\n';
+                }
+            }
+
             strToShowed += this.dataArray[i].toString != undefined ?
                 (this.dataArray[i] as {toString(): string}).toString() : this.dataArray[i];
             strToShowed += '\n';
@@ -65,11 +81,11 @@ export class Book<DataType extends {toString?(): string}> {
             interaction.edit(this.msgComponent);
             return;
         }
-        else if(this.currentPageIndex == 1){
+        if(this.currentPageIndex == 1){
             button.option.disable = true;
             button.adapt();
         }
-        else if(this.currentPageIndex == this.nbPageMax-1) {
+        if(this.currentPageIndex == this.nbPageMax-1) {
             this.buttonRow.buttons[1].option.disable = false;
             this.buttonRow.buttons[1].adapt();
         }
@@ -89,11 +105,11 @@ export class Book<DataType extends {toString?(): string}> {
             interaction.edit(this.msgComponent);
             return;
         }
-        else if(this.currentPageIndex == this.nbPageMax-2){
+        if(this.currentPageIndex == this.nbPageMax-2){
             button.option.disable = true;
             button.adapt();
         }
-        else if(this.currentPageIndex == 0) {
+        if(this.currentPageIndex == 0) {
             this.buttonRow.buttons[0].option.disable = false;
             this.buttonRow.buttons[0].adapt();
         }

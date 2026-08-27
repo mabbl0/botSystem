@@ -45,7 +45,7 @@ export {Role} from './user/role'
 /*** Tools ***/
 export {SaveController} from './tools/save-controller'
 export {YesNoButtons} from './tools/yes-no-button'
-export {Book} from './tools/book'
+export {Book, BookChapter} from './tools/book'
 
 
 // BotSystem
