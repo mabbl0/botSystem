@@ -299,7 +299,7 @@ export class EventDiscord implements EventAPI {
         if (interactionApi.components.length == 1 && interactionApi.components[0].type == Discord.ComponentType.Label) {
             // it is modal from a button adaptation input text
             let modalChoiceData = this.getModalChoice(interactionApi.components[0]);
-            if (modalChoiceData.type != MsgComponentType.Unknow) {
+            if (modalChoiceData.type != MsgComponentType.Unknown) {
                 interact.choice = modalChoiceData.choice;
             }
         }
