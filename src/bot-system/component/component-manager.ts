@@ -17,10 +17,10 @@ export class ComponentManager extends UnitComponent {
     private bsComponentArr: Array<UnitComponent>
     private bsConf: BotSystemConf
 
-    private cmdManager: CommandManager
-    private eventManager: EventManager
-    private mthManager: MethodManager
-    private propManager: PropertyManager
+    private cmdManager: CommandManager | undefined
+    private eventManager: EventManager | undefined
+    private mthManager: MethodManager | undefined
+    private propManager: PropertyManager | undefined
 
     constructor(bsConf: BotSystemConf, ) {
         super("ComponentManager", "Manage BotSystem Component");
@@ -141,11 +141,11 @@ export class ComponentManager extends UnitComponent {
     */
     private lsComponent(msg: Message, researchArg: string) {
         let researchStr = researchArg.trim().toLowerCase();
-        let hasAresearch = researchStr!=undefined && researchStr.length != 0;
+        let hasAResearch = researchStr!=undefined && researchStr.length != 0;
         let strReply = '';
         let hasComponentReply = false;
         let botSystemDescription = {name: 'BotSystem', description: 'BotSystem main', type: ComponentType.BotSystem};
-        if(hasAresearch) {
+        if(hasAResearch) {
             this.componentArr.forEach( c => {
                 if(researchArg.includes(c.name)) {
                     hasComponentReply = true;
@@ -172,19 +172,19 @@ export class ComponentManager extends UnitComponent {
         }
 
         if(!hasComponentReply) {
-            if(hasAresearch) {
+            if(hasAResearch) {
                 strReply += `component research for '${researchStr}':\n`
             }
 
             let strComponent = '';
             let nbComponent = 0;
             this.componentArr.forEach( c => {
-                if(!hasAresearch || c.name.toLowerCase().includes(researchStr)) {
+                if(!hasAResearch || c.name.toLowerCase().includes(researchStr)) {
                     nbComponent += 1;
                     strComponent += '- ' + c.toString() + '\n';
                     c.extensionList.forEach(e => strComponent += '  - ' + e.toString() + '\n');
                 }
-                else if(hasAresearch) {
+                else if(hasAResearch) {
                     c.extensionList.forEach( e => {
                         if(e.name.toLowerCase().includes(researchStr)) {
                             nbComponent += 1;
@@ -202,12 +202,12 @@ export class ComponentManager extends UnitComponent {
             let strBsComponent = '';
             let nbBsComponent = 0;
             this.bsComponentArr.forEach( c => {
-                if(!hasAresearch || c.name.toLowerCase().includes(researchStr)) {
+                if(!hasAResearch || c.name.toLowerCase().includes(researchStr)) {
                     nbBsComponent += 1;
                     strBsComponent += '- ' + c.toString() + '\n';
                 }
             });
-            if(!hasAresearch || botSystemDescription.name.toLowerCase().includes(researchStr)) {
+            if(!hasAResearch || botSystemDescription.name.toLowerCase().includes(researchStr)) {
                 nbBsComponent += 1;
                 strBsComponent += `- **${botSystemDescription.name}**: ${botSystemDescription.description}\n`;
             }
@@ -239,18 +239,18 @@ export class ComponentManager extends UnitComponent {
                 strReturn += `- Save file: ${saveFile}\n`;
             }
         }
-        else if(component.name == this.eventManager.name) {
+        else if(component.name == this.eventManager?.name) {
             strReturn += `- Save file: ${this.eventManager.saveFileName}\n`;
         }
 
         // Commands
-        strReturn += this.cmdManager.infoComponent(component.name);
+        strReturn += this.cmdManager?.infoComponent(component.name);
         // Events
-        strReturn += this.eventManager.infoComponent(component.name);
+        strReturn += this.eventManager?.infoComponent(component.name);
         // Methods
-        strReturn += this.mthManager.infoComponent(component.name);
+        strReturn += this.mthManager?.infoComponent(component.name);
         // Properties
-        strReturn += this.propManager.infoComponent(component.name);
+        strReturn += this.propManager?.infoComponent(component.name);
 
         return strReturn;
     }

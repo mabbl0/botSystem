@@ -85,7 +85,7 @@ export class PropInterface {
      * @param propName prop name to found
      * @returns prop found
      */
-    getProp<PropType>(componentName: string, propName: string): PropAccess<PropType>{
+    getProp<PropType>(componentName: string, propName: string): PropAccess<PropType> | undefined{
         if(this.#mthGetProp){ // can be undefined for the first unit
             return this.#mthGetProp<PropType>(this.#componentName, componentName, propName);
         }

@@ -4,20 +4,20 @@ import { MsgToSend } from "../communication/comm-type"
 import { WakeupDateEvent, WakeupDateOption } from "./wakeup-date-event"
 import { Message } from "../communication/message"
 
-/** Interface to subcribe to a event, or add a 'wake up on date' event */
+/** Interface to subscribe to a event, or add a 'wake up on date' event */
 export class EventInterface {
     #componentName: string
     #mthInterface: MethodInterface
 
-    #mthSubBootConnectedEvent: (componentName: String, fct: () => void) => void
-    #mthSubMsgInteractionEvent: (componentName: String, fct: (msg: Message) => void) => void
-    #mthSubAddedUserEvent: (componentName: String, fct: (user: User) => void) => void
-    #mthSubUserVoiceConnectionEvent: (componentName: String, fct: (user: User) => void) => void
-    #mthSubBeforeSentEvent: (componentName: String, fct: (msg: MsgToSend) => boolean) => void
+    #mthSubBootConnectedEvent?: (componentName: String, fct: () => void) => void
+    #mthSubMsgInteractionEvent?: (componentName: String, fct: (msg: Message) => void) => void
+    #mthSubAddedUserEvent?: (componentName: String, fct: (user: User) => void) => void
+    #mthSubUserVoiceConnectionEvent?: (componentName: String, fct: (user: User) => void) => void
+    #mthSubBeforeSentEvent?: (componentName: String, fct: (msg: MsgToSend) => boolean) => void
 
-    #mthAddNewWakeupDateEvent: <TArgs>(eventName: string, ownerName: string,  fct: (args: TArgs) => void, option?: WakeupDateOption) => void
-    #mthAddWakeupDateEvent: <TArgs>(wudEventToAdd: WakeupDateEvent<TArgs>) => void
-    #mthSubToWakeupDateEvent: <TArgs>(eventName: string, subName: string, args: TArgs, wakeupDate: number, nbCallBeforeRemove?: number, nextCall?: number) => void
+    #mthAddNewWakeupDateEvent?: <TArgs>(eventName: string, ownerName: string,  fct: (args: TArgs) => void, option?: WakeupDateOption) => void
+    #mthAddWakeupDateEvent?: <TArgs>(wudEventToAdd: WakeupDateEvent<TArgs>) => void
+    #mthSubToWakeupDateEvent?: <TArgs>(eventName: string, subName: string, args: TArgs, wakeupDate: number, nbCallBeforeRemove?: number, nextCall?: number) => void
 
     /**
      * constructor to init event interface
@@ -52,6 +52,7 @@ export class EventInterface {
      * @param fct the function to sub
      */
     subBootConnectedEvent(fct: () => void) {
+        if(this.#mthSubBootConnectedEvent)
         this.#mthSubBootConnectedEvent(this.#componentName, fct);
     }
 
@@ -61,6 +62,7 @@ export class EventInterface {
      * @param fct the function to sub
      */
     subMsgInteractionEvent(fct: (msg: Message) => void) {
+        if(this.#mthSubMsgInteractionEvent)
         this.#mthSubMsgInteractionEvent(this.#componentName, fct);
     }
 
@@ -70,6 +72,7 @@ export class EventInterface {
      * @param fct the function to sub
      */
     subAddedUserEvent(fct: (user: User) => void) {
+        if(this.#mthSubAddedUserEvent)
         this.#mthSubAddedUserEvent(this.#componentName, fct);
     }
 
@@ -78,6 +81,7 @@ export class EventInterface {
      * @param fct the function to sub
      */
     subUserVoiceConnectionEvent(fct: (user: User) => void) {
+        if(this.#mthSubUserVoiceConnectionEvent)
         this.#mthSubUserVoiceConnectionEvent(this.#componentName, fct);
     }
 
@@ -87,6 +91,7 @@ export class EventInterface {
      * @param fct the function to sub
      */
     subBeforeSentEvent(fct: (msg: MsgToSend) => boolean) {
+        if(this.#mthSubBeforeSentEvent)
         this.#mthSubBeforeSentEvent(this.#componentName, fct);
     }
 
@@ -99,6 +104,7 @@ export class EventInterface {
      * @param option option for the event
      */
     addNewWakeupDateEvent<TArgs>(eventName: string,  fct: (args: TArgs) => void, option?: WakeupDateOption): void {
+        if(this.#mthAddNewWakeupDateEvent)
         this.#mthAddNewWakeupDateEvent(eventName, this.#componentName, fct, option);
     }
 
@@ -107,6 +113,7 @@ export class EventInterface {
      * @param wudEventToAdd event to add
      */
     addWakeupDate<TArgs>(wudEventToAdd: WakeupDateEvent<TArgs>) {
+        if(this.#mthAddWakeupDateEvent)
         this.#mthAddWakeupDateEvent(wudEventToAdd);
     }
 
@@ -120,6 +127,7 @@ export class EventInterface {
      * @param nextCall indicate when recall the sub if it is not remove
      */
     subToWakeupDateEvent<TArgs>(eventName: string, subName: string, args: TArgs, wakeupDate: number, nbCallBeforeRemove?: number, nextCall?: number) {
+        if(this.#mthSubToWakeupDateEvent)
         this.#mthSubToWakeupDateEvent(eventName, subName, args, wakeupDate, nbCallBeforeRemove, nextCall);
     }
 

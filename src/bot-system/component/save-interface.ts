@@ -20,15 +20,20 @@ export class SaveInterface {
     #log: (logLevel: number, txt: string) => void
 
     /** @internal */
-    constructor(logFct: (logLevel: number, txt: string) => void, componentName: string, propInterface: PropInterface, pathFile: string, saveFileVersion: number) {
+    constructor(logFct: (logLevel: number, txt: string) => void, componentName: string, propInterface: PropInterface, pathFile?: string, saveFileVersion?: number) {
         this.#log = logFct;
         this.#componentName = componentName;
-        this.#canBeSave = isJsonExtension(pathFile) && saveFileVersion>0;
+        this.#canBeSave = pathFile != undefined && saveFileVersion != undefined && 
+            isJsonExtension(pathFile) && saveFileVersion>0;
         if(this.#canBeSave) {
-            this.#pathFile = propInterface.getProp<string>("BotSystem", "saveDirPath")?.value + pathFile;
-            this.#saveFileVersion = saveFileVersion;
-            this.#lastDateSave = 0;
+            this.#pathFile = propInterface.getProp<string>("BotSystem", "saveDirPath")?.value + (pathFile as string);
+            this.#saveFileVersion = saveFileVersion as number;
         }
+        else {
+            this.#pathFile = "";
+            this.#saveFileVersion = 0;
+        }
+        this.#lastDateSave = 0;
     }
 
     get lastDateSave(): number {
@@ -44,7 +49,7 @@ export class SaveInterface {
      * @param defaultData default data in case of error
      * @returns the data loaded
      */
-    load<DataType>(defaultData: DataType): DataType {
+    load<DataType extends {[key: string]: any}>(defaultData: DataType): DataType {
         if (!this.#canBeSave) {
             this.#log(LogLevel.Error, `Component ${this.#componentName} is not authorized to load. Check component configuration file.`);
             return defaultData;

@@ -26,4 +26,4 @@ export const enum LogLevel {
     Debug
 }
 
-export type LogLevelStr = 'Unknow' | 'None' | 'Error' | 'Warning' | 'Verbose' | 'Info' | 'Debug';
+export type LogLevelStr = 'Unknown' | 'None' | 'Error' | 'Warning' | 'Verbose' | 'Info' | 'Debug';

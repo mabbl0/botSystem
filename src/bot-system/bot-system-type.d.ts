@@ -50,7 +50,7 @@ export interface BotSystemConf {
 export const enum BotSystemState {
     Start, // BotSystem start
     Initialization, // Initialization of custom components
-    Boot, // Boot of components after Api connexion
+    Boot, // Boot of components after Api connection
     Runtime, // After components boot or a !connect
     Pause // after a !disconnect
 }

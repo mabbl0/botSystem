@@ -8,7 +8,7 @@ export class PropertyManager extends UnitComponent {
     private propsMap: MapName<PropMapComponent>
 
     constructor() {
-        super("PropertyManager", "Manage BotSystem Preperty");
+        super("PropertyManager", "Manage BotSystem Property");
         this.propsMap = new MapName<PropMapComponent>();
 
         this.mthInterface.addMethod("initNewComponentProps", this.initNewComponentProps.bind(this));
@@ -60,10 +60,10 @@ export class PropertyManager extends UnitComponent {
      * @param propName prop name to found
      * @returns prop found
      */
-    getProp<PropType>(componentName: string, ownerName: string, propName: string): PropAccess<PropType> {
+    getProp<PropType>(componentName: string, ownerName: string, propName: string): PropAccess<PropType> | undefined {
         let propsComponent = this.propsMap.get(ownerName);
         if (!propsComponent) {
-            this.logError(`Propperties component ask by ${componentName} not found: ${ownerName}.${propName}`);
+            this.logError(`Properties component ask by ${componentName} not found: ${ownerName}.${propName}`);
             return undefined;
         }
 
@@ -128,7 +128,7 @@ export class PropertyManager extends UnitComponent {
         msg.reply(strToReply);
     }
 
-    // text command to set a propety, if not in readonly
+    // text command to set a property, if not in readonly
     txtCmdSetProp(msg: Message, arg: string) {
         let componentsName = arg.match(/\w+(?=\.)/g);
         let propsName = arg.match(/(?<=\.)\w+/g);
@@ -175,7 +175,7 @@ export class PropertyManager extends UnitComponent {
     /**
      * try to set multiple prop, from the !setProp command
      * @param msg message sent for the command
-     * @param arg argument givr
+     * @param arg argument gives
      * @returns indicate if the message is reply
      */
     private tryToSetMultiple(msg: Message, arg: string): boolean {

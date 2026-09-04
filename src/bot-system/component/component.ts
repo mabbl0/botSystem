@@ -43,15 +43,18 @@ export abstract class Component extends UnitComponent {
     private loadConf(){
         const confFileName = this.name.replace(/(?<!^)(?=[A-Z])/g,'-').toLowerCase() + '-conf.json';
         try {
-            let confPathDir = this.propInterface.getProp("ComponentManager","confPathDir");
-            if(confPathDir.value == undefined){
-                this.conf = loadData<ComponentConf>('./' + confFileName);
+            let confPathDir = this.propInterface.getProp<string>("ComponentManager","confPathDir");
+            let conf = loadData<ComponentConf>(  confPathDir!=undefined ? 
+                (confPathDir.value + '/' + confFileName) : 
+                ('./' + confFileName));
+            if(conf != undefined) {
+                this.conf = conf;
             }
-            else{
-                this.conf = loadData<ComponentConf>(confPathDir.value + '/' + confFileName);
-            }
+
             // set prop from conf
-            this.propLogLevel.value = this.conf.logLevel;
+            if(this.conf.logLevel!=undefined) {
+                this.propLogLevel.value = this.conf.logLevel;
+            }
         } catch (e) {
             // component can to not have conf file
         }

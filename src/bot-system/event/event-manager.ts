@@ -17,7 +17,7 @@ export class EventManager extends UnitComponent {
     private saveInterface: SaveInterface
     private eventArr: Array<Event<any,any>>
 
-    // Event call when once at boot, after bot api connexion
+    // Event call when once at boot, after bot api connection
     bootConnectedEvent: Event<[void],void>
     // Event call when a message is created, to interact with the message
     msgInteractionEvent: Event<[msg: Message], void>

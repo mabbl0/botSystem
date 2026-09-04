@@ -121,14 +121,14 @@ export abstract class Unit {
     }
 
 
-    /*** Tempory Static add and get methods ****/
+    /*** Temporary Static add and get methods ****/
 
     /** @internal */
-    private static _tmpAddMth: MthAddPrototype
+    private static _tmpAddMth?: MthAddPrototype
     /** @internal */
-    private static _tmpGetMth: MthGetPrototype
+    private static _tmpGetMth?: MthGetPrototype
     /** @internal */
-    private static _tmpInitMth: MthInitPrototype
+    private static _tmpInitMth?: MthInitPrototype
 
     /** @internal */
     static initUnit(addMth: MthAddPrototype, getMth: MthGetPrototype, initMth: MthInitPrototype){

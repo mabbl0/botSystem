@@ -17,7 +17,7 @@ export interface WakeupDateJson {
 
 export class WakeupDateController {
     #wudMap: MapName<WakeupDateEvent<any>>
-    #nextCall: number // date of the next sub call
+    #nextCall: number | undefined // date of the next sub call
     #log: (logLevel: number, txt: string) => void
     #saveFct: ()=>void
 
@@ -262,7 +262,7 @@ export class WakeupDateController {
     }
     toJson(): WakeupDateJson {
         return {
-            events: this.#wudMap.toJson(wud => wud.saved)
+            events: this.#wudMap.toJson(wud => wud.saved ? true : false)
         }
     }
 

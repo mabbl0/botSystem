@@ -7,19 +7,19 @@ import { Method, MethodOption, MthMapComponent } from "./method-type";
 
 /** @internal */
 export class MethodManager extends UnitComponent {
-    private mthsMap: MapName<MthMapComponent>
+    private mthMap: MapName<MthMapComponent>
     private propBsState: PropAccess<BotSystemState>
 
     constructor(propBsState: PropAccess<BotSystemState>) {
         super("MethodManager", "Manage BotSystem Method");
         this.propBsState = propBsState;
-        this.mthsMap = new MapName<MthMapComponent>();
+        this.mthMap = new MapName<MthMapComponent>();
     }
 
     // initiate the methods for a new component
     initNewComponentMth(componentName: string) {
-        if (!this.mthsMap.has(componentName)) {
-            this.mthsMap.set({
+        if (!this.mthMap.has(componentName)) {
+            this.mthMap.set({
                 name: componentName,
                 mths: new MapName<Method>()
             });
@@ -44,7 +44,7 @@ export class MethodManager extends UnitComponent {
             return;
         }
 
-        let mthsComponent = this.mthsMap.get(ownerName);
+        let mthsComponent = this.mthMap.get(ownerName);
         if (!mthsComponent) {
             this.logError(`component methods not found (${ownerName}) to add method ${mthName}`);
             return;
@@ -72,7 +72,7 @@ export class MethodManager extends UnitComponent {
      * @returns method found
      */
     getMethod<FctPrototype>(componentName: string, componentType: ComponentType, ownerName: string, mthName: string): FctPrototype {
-        let mthsComponent = this.mthsMap.get(ownerName);
+        let mthsComponent = this.mthMap.get(ownerName);
         if (!mthsComponent) {
             if (this.propBsState.value != BotSystemState.Start) {
                 this.logError(`Methods Component ask by ${componentName} not found: ${ownerName}.${mthName}`);
@@ -107,7 +107,7 @@ export class MethodManager extends UnitComponent {
 
     // give method information about an component
     infoComponent(componentName: string): string {
-        let componentMap = this.mthsMap.get(componentName);
+        let componentMap = this.mthMap.get(componentName);
         if(componentMap!=undefined && componentMap.mths.size!=0) {
             let strReturn = `- ${componentMap.mths.size} methods added:\n`;
             componentMap.mths.forEach(mth => strReturn += '  - ' + mth.name + '\n');

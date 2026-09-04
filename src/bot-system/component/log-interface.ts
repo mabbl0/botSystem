@@ -5,7 +5,7 @@ import { LogLevel, LogLevelStr } from "./component-type";
  * 
  */
 export class LogInterface {
-    #mthSendMsgToBotChannel: (msg: string) => void
+    #mthSendMsgToBotChannel?: (msg: string) => void
     #componentName: string
 
     constructor(componentName: string){
@@ -20,7 +20,7 @@ export class LogInterface {
     }
     
     /**
-     * log a text on the console if the log level premit it, and send the bot channel if asked
+     * log a text on the console if the log level permit it, and send the bot channel if asked
      * @param componentLogLevel the actual component log level
      * @param txtLogLevel the text log level
      * @param onBotChannel indicate if the message shall be sent to the bot channel
@@ -75,7 +75,7 @@ export class LogInterface {
             case LogLevel.Debug:
                 return 'Debug';
             default:
-                return 'Unknow';
+                return 'Unknown';
         }
     }
 

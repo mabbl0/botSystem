@@ -53,7 +53,7 @@ export class PropAccess<PropType> {
     }
 
     toString(): string {
-        return `${this.name}: ${this.value.toString()} (${typeof this.value}${this.readonly? ' readonly' : ''})`;
+        return `${this.name}: ${(this.value as {toString(): string}).toString != undefined ? (this.value as {toString(): string}).toString() : this.value} (${typeof this.value}${this.readonly? ' readonly' : ''})`;
     }
 }
 

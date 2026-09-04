@@ -24,4 +24,18 @@ export abstract class Extension<ComponentType extends Component> extends UnitCom
     }
 
     // TODO: add a defaultConf method
+    
+    /**
+     * indicate default value for the component configuration
+     * @param defaultConf default configuration for the component
+     */
+    defaultConf<Conf extends ComponentConf>(defaultConf: Conf) {
+        const keys = Object.keys(defaultConf) as (keyof Conf)[];
+        let conf = this.conf as Conf;
+        keys.forEach( kStr => {
+            if(conf[kStr] == undefined){
+                conf[kStr] = defaultConf[kStr];
+            }
+        });
+    }
 }

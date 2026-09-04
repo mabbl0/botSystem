@@ -5,8 +5,8 @@ interface WakeupDateSub<TArgs> {
     args: TArgs
     wakeupDate: number // date in ms since 1970
 
-    nbCallBeforeRemove: number
-    nextCall: number
+    nbCallBeforeRemove?: number
+    nextCall?: number
 }
 
 export interface WakeupDateEventJson {
@@ -24,8 +24,8 @@ export interface WakeupDateOption {
 export class WakeupDateEvent<TArgs> {
     readonly name: string
     ownerName: string
-    #fct: (args: TArgs) => void
-    #subAddedCall: (eventName: string, saveFile: boolean)=>void
+    #fct?: (args: TArgs) => void
+    #subAddedCall?: (eventName: string, saveFile: boolean)=>void
     #subList: Array<WakeupDateSub<TArgs>> // sub list sort in to the next sub to wake up to the last
     #option: WakeupDateOption
     #nbSuccessiveOverDate: number // number of successive sub add with an over date
@@ -71,7 +71,7 @@ export class WakeupDateEvent<TArgs> {
     /**
      * Return the date of the next sub called. Undefined if no sub
      */
-    get nextCall(): number {
+    get nextCall(): number | undefined {
         if(this.#subList.length==0 || this.#fct==undefined) {
             return undefined;
         }
@@ -81,14 +81,14 @@ export class WakeupDateEvent<TArgs> {
     /**
      * Indicate if the event is private or not
      */
-    get private(): boolean {
+    get private(): boolean | undefined {
         return this.#option.private;
     }
 
     /**
      * Indicate if the event should be saved in data file
      */
-    get saved(): boolean {
+    get saved(): boolean | undefined {
         return this.#option.saved;
     }
 
@@ -96,7 +96,7 @@ export class WakeupDateEvent<TArgs> {
      * set the called function if function not already set
      * @param #fct function to call
      */
-    setFct(fct: (args: TArgs) => void) {
+    setFct(fct?: (args: TArgs) => void) {
         if (this.#fct == undefined) { // only once
             this.#fct = fct;
         }
@@ -113,7 +113,7 @@ export class WakeupDateEvent<TArgs> {
     }
 
     /**
-     * Copy the function and #option of an other similaire event
+     * Copy the function and #option of an other similar event
      * @param wudEventToCopy event to copy
      */
     copyFctOpt(wudEventToCopy: WakeupDateEvent<TArgs>) {
@@ -122,7 +122,7 @@ export class WakeupDateEvent<TArgs> {
     }
 
     /**
-     * Copy the sub of an other similaire event
+     * Copy the sub of an other similar event
      * @param wudEventToCopy event to copy
      */
     copySub(wudEventToCopy: WakeupDateEvent<TArgs>) {
@@ -167,7 +167,7 @@ export class WakeupDateEvent<TArgs> {
             this.#nbSuccessiveOverDate = 0;
         }
 
-        if(nextCall != undefined && nextCall < this.#option.minBeforeSubRecall) { // minimum before call
+        if(nextCall != undefined && this.#option.minBeforeSubRecall !=undefined && nextCall < this.#option.minBeforeSubRecall) { // minimum before call
             nextCall = this.#option.minBeforeSubRecall;
         }
 
@@ -180,7 +180,7 @@ export class WakeupDateEvent<TArgs> {
         });
         
         if(this.#subAddedCall!=undefined) {
-            this.#subAddedCall(this.name, this.#option.saved);
+            this.#subAddedCall(this.name, this.#option.saved ? true : false);
         }
     }
 
@@ -273,10 +273,10 @@ export class WakeupDateEvent<TArgs> {
         let nbCallLeftStr: string
         let wakeupDateStr: string
         this.#subList.forEach(sub => {
-            if(sub.nbCallBeforeRemove > 1) {
+            if(sub.nbCallBeforeRemove != undefined && sub.nbCallBeforeRemove > 1) {
                 nbCallLeftStr = `${sub.nbCallBeforeRemove?.toString()} left / `;
             }
-            else if(sub.nbCallBeforeRemove < 0) {
+            else if(sub.nbCallBeforeRemove != undefined && sub.nbCallBeforeRemove < 0) {
                 nbCallLeftStr = 'infinite / ';
             }
             else {

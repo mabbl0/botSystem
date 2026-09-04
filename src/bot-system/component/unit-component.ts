@@ -5,7 +5,7 @@ import { Unit } from "./unit";
 
 export abstract class UnitComponent extends Unit {
 
-    /** Interface to subcribe to a event, or add a 'wake up on date' event */
+    /** Interface to subscribe to a event, or add a 'wake up on date' event */
     eventInterface: EventInterface
     
     /** Interface to add text command or slash command */
@@ -29,7 +29,7 @@ export abstract class UnitComponent extends Unit {
 
     /** Component boot
      * Bot api may be not connected
-     * Sub the BootConnectedEvent, for a boot after api connexion
+     * Sub the BootConnectedEvent, for a boot after api connection
     */
     boot(){
     }

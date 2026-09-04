@@ -6,8 +6,8 @@ export class MethodInterface {
     #componentName: string
     #ptrType: {value: ComponentType}
 
-    #mthAddMethod: MthAddPrototype
-    #mthGetMethod: MthGetPrototype
+    #mthAddMethod?: MthAddPrototype
+    #mthGetMethod?: MthGetPrototype
 
     /**
      * Initiate the method interface with component name
@@ -18,7 +18,7 @@ export class MethodInterface {
      * @param mthInitNewComponent 
      * @internal
      */
-    constructor(componentName: string, ptrType: {value: ComponentType}, mthAddMethod: MthAddPrototype, mthGetMethod: MthGetPrototype, mthInitNewComponent: MthInitPrototype){
+    constructor(componentName: string, ptrType: {value: ComponentType}, mthAddMethod?: MthAddPrototype, mthGetMethod?: MthGetPrototype, mthInitNewComponent?: MthInitPrototype){
         this.#componentName = componentName;
         this.#ptrType = ptrType;
         this.initInterface(mthAddMethod, mthGetMethod, mthInitNewComponent);
@@ -32,10 +32,14 @@ export class MethodInterface {
      * @param mthInitNewComponent 
      * @internal
      */
-    initInterface(mthAddMethod: MthAddPrototype, mthGetMethod: MthGetPrototype, mthInitNewComponent: MthInitPrototype){
+    initInterface(mthAddMethod?: MthAddPrototype, mthGetMethod?: MthGetPrototype, mthInitNewComponent?: MthInitPrototype){
         if(this.#mthAddMethod==undefined && this.#mthGetMethod==undefined){ // only once
-            this.#mthAddMethod = mthAddMethod;
-            this.#mthGetMethod = mthGetMethod;
+            if(mthAddMethod) {
+                this.#mthAddMethod = mthAddMethod;
+            }
+            if(mthGetMethod) {
+                this.#mthGetMethod = mthGetMethod;
+            }
             
             if(mthInitNewComponent){ // can be undefined for the first unit
                 mthInitNewComponent(this.#componentName);
@@ -61,7 +65,7 @@ export class MethodInterface {
      * @param mthName method name to found
      * @returns method found
      */
-    getMethod<FctPrototype>(componentName: string, mthName: string): FctPrototype{
+    getMethod<FctPrototype>(componentName: string, mthName: string): FctPrototype | undefined{
         if(this.#mthGetMethod){
             return this.#mthGetMethod<FctPrototype>(this.#componentName, this.#ptrType.value, componentName, mthName);
         }
