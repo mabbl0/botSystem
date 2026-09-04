@@ -17,11 +17,11 @@ export class MessageComponent extends MessageComponentBase {
     msgComponents: MessageComponentBase[]
     readonly id: string
     #msgcCounter: number
-    #commSent: CommunicationBase<Message>
+    #commSent: CommunicationBase<Message> | undefined
     msgOption: MsgOption
-    #addMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
-    #removeMsgComponentInteraction: (msgComponentInteractives: MsgComponentInteractive[]) => void
-    #adapterConstruct: new () => MsgComponentAdapterApi
+    #addMsgComponentInteraction: ((msgComponentInteractives: MsgComponentInteractive[]) => void) | undefined
+    #removeMsgComponentInteraction: ((msgComponentInteractives: MsgComponentInteractive[]) => void) | undefined
+    #adapterConstruct: (new () => MsgComponentAdapterApi) | undefined
     
     /** @internal */
     constructor(id: string, addMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, removeMsgComponentInteraction?: (msgComponentInteractives: MsgComponentInteractive[]) => void, adapterConstruct?: new () => MsgComponentAdapterApi) {
@@ -49,14 +49,13 @@ export class MessageComponent extends MessageComponentBase {
             (this.#commSent as Message).delete();
         }
         // remove the msg component with interaction from the manager
-        if(this.#removeMsgComponentInteraction) {
+        if(this.#removeMsgComponentInteraction != undefined && this.interactiveComponents != undefined) {
             this.#removeMsgComponentInteraction(this.interactiveComponents);
         }
         
         this.msgComponents.forEach( msgC => {
             msgC.destroy();
         });
-        this.msgComponents = undefined;
         this.#addMsgComponentInteraction = undefined;
         this.#removeMsgComponentInteraction = undefined;
     }
@@ -94,7 +93,7 @@ export class MessageComponent extends MessageComponentBase {
      * @internal
      */
     private addNewInteractiveMessageComponent<MsgComponentType extends MessageComponentBase>(newMsgComponent: MsgComponentType): MsgComponentType {
-        newMsgComponent.interactiveComponents.forEach( iComponent => this.interactiveComponents.push(iComponent));
+        newMsgComponent.interactiveComponents?.forEach( iComponent => this.interactiveComponents?.push(iComponent));
         return this.addNewMessageComponent(newMsgComponent);
     }
 
@@ -166,7 +165,7 @@ export class MessageComponent extends MessageComponentBase {
      * @param inputText option, interaction to add
      * @returns the new input text created
      */
-    addInputText(inputText?: InputTxtBase): InputText {
+    addInputText(inputText: InputTxtBase): InputText {
         return this.addNewInteractiveMessageComponent(new InputText(this, inputText, this.displayType));
     }
 
@@ -203,8 +202,8 @@ export class MessageComponent extends MessageComponentBase {
      * @internal
      */
     prepareToSend() {
-        // fisrt indicate and update the msg component with interaction
-        if(this.#addMsgComponentInteraction) {
+        // first indicate and update the msg component with interaction
+        if(this.#addMsgComponentInteraction != undefined && this.interactiveComponents != undefined) {
             this.#addMsgComponentInteraction(this.interactiveComponents);
         }
     }

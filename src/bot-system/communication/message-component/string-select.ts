@@ -25,7 +25,7 @@ export interface StringSelectBase {
 
 export class StringSelect extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
-    interactionFct: (interaction: Interaction, stringSelect: StringSelect) => void
+    interactionFct: ((interaction: Interaction, stringSelect: StringSelect) => void) | undefined
     #option: StringSelectOption
     #choices: StringSelectChoice[]
     
@@ -33,7 +33,6 @@ export class StringSelect extends MessageComponentBase implements MsgComponentIn
     constructor(msgcOwner: MessageComponentBase, strSelect: StringSelectBase, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
         super(msgcOwner, displayType, MsgComponentType.StringSelect);
 
-        this.id = strSelect.id;
         this.interactionFct = strSelect.interactionFct;
         this.#choices = strSelect.choices;
         
@@ -41,7 +40,7 @@ export class StringSelect extends MessageComponentBase implements MsgComponentIn
             this.id = strSelect.id;
         }
         else {
-            if(this.msgcOwner.getUniqueId != undefined) {
+            if(this.msgcOwner?.getUniqueId != undefined) {
                 this.id = this.msgcOwner.getUniqueId();
             }
             else {
@@ -75,7 +74,7 @@ export class StringSelect extends MessageComponentBase implements MsgComponentIn
             }
         }
 
-        if(this.#option.minChoice > this.#option.maxChoice) {
+        if((this.#option.minChoice as number) > (this.#option.maxChoice as number)) {
             this.#option.minChoice = this.#option.maxChoice;
         }
         // disable string select if it has no interaction

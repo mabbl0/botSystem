@@ -24,7 +24,7 @@ export interface ButtonBase {
 export class Button extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
     #label: string
-    interactionFct: (interaction: Interaction, button: Button) => void
+    interactionFct: ((interaction: Interaction, button: Button) => void) | undefined
     #option: ButtonOption
 
     /** @internal */
@@ -37,7 +37,7 @@ export class Button extends MessageComponentBase implements MsgComponentInteract
             this.id = button.id;
         }
         else {
-            if(this.msgcOwner.getUniqueId != undefined) {
+            if(this.msgcOwner?.getUniqueId != undefined) {
                 this.id = this.msgcOwner.getUniqueId() + this.#label;
             }
             else {

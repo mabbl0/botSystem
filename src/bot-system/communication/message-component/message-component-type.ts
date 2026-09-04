@@ -14,13 +14,13 @@ export const enum MsgComponentType {
     ChannelSelect,
     InputText,
 
-    Unknow
+    Unknown
 }
 
 export const enum MsgComponentDisplayType {
     Message,
     Modal,
-    Unknow
+    Unknown
 }
 
 /** class interface for the message component class
@@ -30,18 +30,18 @@ export abstract class MessageComponentBase {
     /** @internal */
     protected _displayType: MsgComponentDisplayType
     /** @internal */
-    protected msgcOwner: MessageComponentBase
+    protected msgcOwner: MessageComponentBase | undefined
     /** @internal */
     protected modified: boolean
     /** @internal */
     protected isNew: boolean
     /** @internal */
-    adapter: MsgComponentAdapterApi
+    adapter: MsgComponentAdapterApi | undefined
     /** @internal */
-    interactiveComponents: MsgComponentInteractive[]
+    interactiveComponents: MsgComponentInteractive[] | undefined
     
     /** @internal */
-    constructor(msgcOwner: MessageComponentBase, displayType: MsgComponentDisplayType, type: MsgComponentType) {
+    constructor(msgcOwner: MessageComponentBase | undefined, displayType: MsgComponentDisplayType, type: MsgComponentType) {
         this.type = type;
         this._displayType = displayType;
         this.msgcOwner = msgcOwner;
@@ -112,7 +112,7 @@ export interface MsgComponentInteractiveOption {
 // interaction with a msg component
 export interface MsgComponentInteractive {
     id: string
-    interactionFct: (interaction: Interaction, msgci: MsgComponentInteractive) => void
+    interactionFct: ((interaction: Interaction, msgci: any) => void) | undefined
     option: MsgComponentInteractiveOption
 }
 

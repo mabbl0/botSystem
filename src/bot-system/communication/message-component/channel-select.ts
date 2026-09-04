@@ -16,7 +16,7 @@ export interface ChannelSelectBase {
 
 export class ChannelSelect extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
-    interactionFct: (interaction: Interaction, channelSelect: ChannelSelect) => void
+    interactionFct: ((interaction: Interaction, channelSelect: ChannelSelect) => void) | undefined
     #option: ChannelSelectOption
     
     /** @internal */
@@ -29,7 +29,7 @@ export class ChannelSelect extends MessageComponentBase implements MsgComponentI
             this.id = channelSelect?.id;
         }
         else {
-            if(this.msgcOwner.getUniqueId != undefined) {
+            if(this.msgcOwner?.getUniqueId != undefined) {
                 this.id = this.msgcOwner.getUniqueId();
             }
             else {
@@ -63,7 +63,7 @@ export class ChannelSelect extends MessageComponentBase implements MsgComponentI
             }
         }
 
-        if(this.#option.minChoice > this.#option.maxChoice) {
+        if((this.#option.minChoice as number) > (this.#option.maxChoice as number)) {
             this.#option.minChoice = this.#option.maxChoice;
         }
         // disable string select if it has no interaction

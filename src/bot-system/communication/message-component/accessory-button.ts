@@ -4,7 +4,7 @@ import { MessageComponentBase, MsgComponentAdapterApi, MsgComponentDisplayType, 
 export class AccessoryButton extends MessageComponentBase {
     #button: Button
     #text: string
-    #adapterConstruct: new () => MsgComponentAdapterApi
+    #adapterConstruct: (new () => MsgComponentAdapterApi) | undefined
 
     /** @internal */
     constructor(msgcOwner: MessageComponentBase, text: string, button: ButtonBase, adapterConstruct?: new () => MsgComponentAdapterApi, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message){
@@ -13,7 +13,9 @@ export class AccessoryButton extends MessageComponentBase {
         this.#text = text;
 
         this.#button = new Button(this, button);
-        this.#button.adapter = new this.#adapterConstruct();
+        if(this.#adapterConstruct != undefined) {
+            this.#button.adapter = new this.#adapterConstruct();
+        }
         this.interactiveComponents = [ this.#button ];
     }
 
@@ -29,9 +31,13 @@ export class AccessoryButton extends MessageComponentBase {
         this.modified = true;
         return this.#button;
     }
+
+    /** set new button to the component */
     setButton(button: ButtonBase) {
         this.#button = new Button(this, button);
-        this.#button.adapter = new this.#adapterConstruct();
+        if(this.#adapterConstruct != undefined) {
+            this.#button.adapter = new this.#adapterConstruct();
+        }
         this.interactiveComponents = [ this.#button ];
         this.modified = true;
     }
@@ -54,6 +60,5 @@ export class AccessoryButton extends MessageComponentBase {
     override destroy() {
         super.destroy();
         this.#button.destroy();
-        this.#button = undefined;
     }
 }

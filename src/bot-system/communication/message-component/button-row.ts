@@ -3,7 +3,7 @@ import { MessageComponentBase, MsgComponentAdapterApi, MsgComponentDisplayType, 
 
 export class ButtonRow extends MessageComponentBase {
     #buttons: Button[]
-    #adapterConstruct: new () => MsgComponentAdapterApi
+    #adapterConstruct: (new () => MsgComponentAdapterApi) | undefined
 
     /** @internal */
     constructor(msgcOwner: MessageComponentBase, buttons?: ButtonBase[], adapterConstruct?: new () => MsgComponentAdapterApi, displayType: MsgComponentDisplayType = MsgComponentDisplayType.Message) {
@@ -13,7 +13,7 @@ export class ButtonRow extends MessageComponentBase {
         this.#buttons = [];
         buttons?.forEach(b => {
             let newButton = new Button(this, b);
-            newButton.adapter = new this.#adapterConstruct();
+            newButton.adapter = this.#adapterConstruct != undefined ? new this.#adapterConstruct() : undefined;
             this.#buttons.push(newButton);
         });
 
@@ -60,7 +60,6 @@ export class ButtonRow extends MessageComponentBase {
         this.#buttons.forEach(b => {
             b.destroy();
         });
-        this.#buttons = undefined;
         this.modified = true;
     }
 
@@ -70,7 +69,9 @@ export class ButtonRow extends MessageComponentBase {
      */
     addButton(button: ButtonBase) {
         let newButton = new Button(this, button);
-        newButton.adapter = new this.#adapterConstruct();
+        if(this.#adapterConstruct != undefined) {
+            newButton.adapter = new this.#adapterConstruct();
+        }
         this.#buttons.push(newButton);
         this.modified = true;
     }

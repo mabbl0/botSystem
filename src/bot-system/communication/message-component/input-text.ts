@@ -18,7 +18,7 @@ export interface InputTxtBase {
 
 export class InputText extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
-    interactionFct: (interaction: Interaction, inputText: InputText) => void
+    interactionFct: ((interaction: Interaction, inputText: InputText) => void) | undefined
     #option: InputTxtOption
 
     /** @internal */
@@ -31,7 +31,7 @@ export class InputText extends MessageComponentBase implements MsgComponentInter
             this.id = inputText?.id;
         }
         else {
-            if(this.msgcOwner.getUniqueId != undefined) {
+            if(this.msgcOwner?.getUniqueId != undefined) {
                 this.id = this.msgcOwner.getUniqueId();
             }
             else {
@@ -60,7 +60,7 @@ export class InputText extends MessageComponentBase implements MsgComponentInter
             }
         }
 
-        if(this.#option.minLength > this.#option.maxLength) {
+        if((this.#option.minLength as number) > (this.#option.maxLength as number)) {
             this.#option.minLength = this.#option.maxLength;
         }
         // disable string select if it has no interaction

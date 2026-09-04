@@ -16,7 +16,7 @@ export interface MentionSelectBase {
 
 export class MentionableSelect extends MessageComponentBase implements MsgComponentInteractive {
     readonly id: string
-    interactionFct: (interaction: Interaction, mentionSelect: MentionableSelect) => void
+    interactionFct: ((interaction: Interaction, mentionSelect: MentionableSelect) => void) | undefined
     #option: MentionSelectOption
 
     
@@ -30,7 +30,7 @@ export class MentionableSelect extends MessageComponentBase implements MsgCompon
             this.id = mentionSelect?.id;
         }
         else {
-            if(this.msgcOwner.getUniqueId != undefined) {
+            if(this.msgcOwner?.getUniqueId != undefined) {
                 this.id = this.msgcOwner.getUniqueId();
             }
             else {
@@ -64,7 +64,7 @@ export class MentionableSelect extends MessageComponentBase implements MsgCompon
             }
         }
 
-        if(this.#option.minChoice > this.#option.maxChoice) {
+        if((this.#option.minChoice as number) > (this.#option.maxChoice as number)) {
             this.#option.minChoice = this.#option.maxChoice;
         }
         // disable string select if it has no interaction

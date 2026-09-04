@@ -4,11 +4,18 @@ import { Button } from "../communication/message-component/button";
 import { ButtonRow } from "../communication/message-component/button-row";
 import { MessageComponent } from "../communication/message-component/message-component";
 
+/**
+ * chapter index in a book
+ */
 export interface BookChapter {
     chapter: string,
     index: number
 }
 
+/**
+ * Create a message with a long text
+ * and buttons to cross the text
+ */
 export class Book<DataType extends {toString?(): string}> {
     /** the data to print */
     dataArray: DataType[]
@@ -25,6 +32,13 @@ export class Book<DataType extends {toString?(): string}> {
     private txtPage: TextMsgComponent
     private buttonRow: ButtonRow
 
+    /**
+     * @param msgComponent the message component to change and send
+     * @param tittle the book tittle
+     * @param dataArray the text split in array
+     * @param chapters index of the chapters
+     * @param dataPerPage the number of elements by pages 
+     */
     constructor(msgComponent: MessageComponent, tittle: string, dataArray: DataType[], chapters?: BookChapter[], dataPerPage: number = 8) {
         this.dataArray = dataArray;
         this.dataPerPage = dataPerPage;
@@ -37,15 +51,18 @@ export class Book<DataType extends {toString?(): string}> {
         this.msgComponent = msgComponent;
         msgComponent.addText("# " + tittle);
         msgComponent.addSeparator();
-        this.txtPage = msgComponent.addText(this.showPage(0));
+        this.txtPage = msgComponent.addText(this.getPage(0));
         this.buttonRow = msgComponent.addButtonRow([
             {label: "<-", interactionFct: this.goToLeftButton.bind(this), option: {disable: true}},
-            {label: "->", interactionFct: this.gotToRightButton.bind(this)}
+            {label: "->", interactionFct: this.gotToRightButton.bind(this), option: {disable: this.nbPageMax <= 1}}
         ])
     }
 
 
-    showPage(pageToShow: number): string {
+    /**
+     * the page to show 
+     */
+    private getPage(pageToShow: number): string {
         let strToShowed = "";
         if(pageToShow < 0) {
             pageToShow = 0;
@@ -72,7 +89,7 @@ export class Book<DataType extends {toString?(): string}> {
         return strToShowed;
     }
 
-
+    /** action after left button click */
     private goToLeftButton(interaction: Interaction, button: Button) {
         if(this.currentPageIndex <= 0) {
             // should not be here
@@ -91,12 +108,13 @@ export class Book<DataType extends {toString?(): string}> {
         }
         this.currentPageIndex += -1;
 
-        this.txtPage.text = this.showPage(this.currentPageIndex);
+        this.txtPage.text = this.getPage(this.currentPageIndex);
         this.txtPage.adapt();
 
         interaction.edit(this.msgComponent);
     }
 
+    /** action after right button click */
     private gotToRightButton(interaction: Interaction, button: Button) {
         if(this.currentPageIndex >= this.nbPageMax-1) {
             // should not be here
@@ -115,7 +133,7 @@ export class Book<DataType extends {toString?(): string}> {
         }
         this.currentPageIndex += 1;
 
-        this.txtPage.text = this.showPage(this.currentPageIndex);
+        this.txtPage.text = this.getPage(this.currentPageIndex);
         this.txtPage.adapt();
 
         interaction.edit(this.msgComponent);

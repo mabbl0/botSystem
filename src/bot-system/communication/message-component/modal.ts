@@ -27,7 +27,7 @@ interface GetChoiceOption {
 }
 
 export class Modal extends MessageComponent implements MsgComponentInteractive {
-    interactionFct: (interaction: Interaction, msgci: MsgComponentInteractive) => void
+    interactionFct: ((interaction: Interaction, modal: Modal) => void) | undefined
     option: MsgComponentInteractiveOption
 
     /** @internal */
@@ -35,9 +35,14 @@ export class Modal extends MessageComponent implements MsgComponentInteractive {
         super(id, addMsgComponentInteraction, removeMsgComponentInteraction, adapterConstruct);
         this._displayType = MsgComponentDisplayType.Modal;
 
-        this.option = modal.option;
+        if(modal.option != undefined) {
+            this.option = modal.option;
+        }
+        else {
+            this.option = {};
+        }
         this.interactionFct = modal.interactionFct;
-        this.interactiveComponents.push(this);
+        this.interactiveComponents?.push(this); // init in MessageComponent
     }
 
     /**
@@ -82,7 +87,7 @@ export class Modal extends MessageComponent implements MsgComponentInteractive {
             return defaultChoice;
         }
         
-        let idComponent: string = undefined;
+        let idComponent: string | undefined = undefined;
         if((componentIndication as IndexChoiceIndication).index != undefined) {
             // research by index
             if((componentIndication as IndexChoiceIndication).index < 0 || (componentIndication as IndexChoiceIndication).index >= this.msgComponents.length) {
