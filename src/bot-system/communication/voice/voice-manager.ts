@@ -1,3 +1,4 @@
+import { Readable } from "stream";
 import { MapName } from "../../../tools/collection/map";
 import { checkExtensionList, existFile } from "../../../tools/file";
 import { UnitComponent } from "../../component/unit-component";
@@ -22,6 +23,7 @@ export class VoiceManager extends UnitComponent {
         /** Declare Methods **/
         this.mthInterface.addMethod('getVoiceChannel', this.getVoiceChannel.bind(this));
         this.mthInterface.addMethod('playAudioFile', this.playAudioFile.bind(this));
+        this.mthInterface.addMethod('playAudioStream', this.playAudioStream.bind(this));
         this.mthInterface.addMethod('vocalConnection', this.vocalConnection.bind(this));
         this.mthInterface.addMethod('vocalDisconnection', this.vocalDisconnection.bind(this));
 
@@ -51,7 +53,7 @@ export class VoiceManager extends UnitComponent {
     // play an audio file in a voice channel
     playAudioFile(audioFileName: string, voiceChannel: VoiceChannel, option?: PlayAudioOption) {
         if(!checkExtensionList(audioFileName, ['mp3', 'opus'])) {
-            this.logError(`File ${audioFileName} has not great extension. Need mp3 or opus extension`);
+            this.logError(`File ${audioFileName} has not right extension. Need mp3 or opus extension`);
             return;
         }
         let pathFile = this.dataDirPath + audioFileName;
@@ -68,6 +70,19 @@ export class VoiceManager extends UnitComponent {
             }
         });
         this.logInfo(`Play '${pathFile}' audio to the ${voiceChannel.name} voice channel`);
+    }
+
+    // play an audio stream in a voice channel
+    playAudioStream(audioTitle: string, audioStream: Readable, voiceChannel: VoiceChannel, option?: PlayAudioOption) {
+
+        this.vocalConnection(voiceChannel, option);
+        this.voiceControlApi?.playStream(audioStream, option).then( () => {
+            if(!this.stayInChannel) {
+                this.voiceControlApi?.botVoiceDisconnection();
+                this.currentVoiceChannel = undefined;
+            }
+        });
+        this.logInfo(`Play '${audioTitle}' audio to the ${voiceChannel.name} voice channel`);
     }
 
     // connection to a voice channel

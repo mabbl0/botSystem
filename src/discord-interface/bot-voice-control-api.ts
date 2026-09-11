@@ -2,6 +2,7 @@ import { VoiceConnection, AudioPlayer, AudioPlayerStatus, joinVoiceChannel, crea
     createAudioResource, AudioPlayerState, VoiceConnectionState,
     VoiceConnectionStatus} from '@discordjs/voice'
 import Discord from "discord.js"
+import { Readable } from "stream";
 
 import { createReadStream } from 'fs'
 import { PlayAudioOption, VoiceChannel } from "../bot-system/communication/voice/voice-channel";
@@ -101,7 +102,7 @@ export class BotVoiceControlDiscord implements BotVoiceControlAPI {
     /**
      * Try to play a audio file, if the bot is connected
      * @param audioFileName audio file name
-     * @param volume volume in percent
+     * @param option play audio option gathering various attribute (volume, ...)
      * @return promise resolve when the audio is finish to play
      */
     playAudio(audioFileName: string, option?: PlayAudioOption): Promise<PlayAudioOption> {
@@ -111,6 +112,34 @@ export class BotVoiceControlDiscord implements BotVoiceControlAPI {
         }
 
         let resource = createAudioResource( createReadStream(audioFileName), {inlineVolume: true} );
+        if(option != undefined && option?.volume != undefined) {
+            resource.volume.setVolume( option?.volume/100 );
+        }
+
+        this.audioPlayer.play(resource);
+        this.currentConnection.subscribe(this.audioPlayer);
+        
+        return new Promise<PlayAudioOption>( resolveFct =>
+            this.newStatePlayerEvent.push( {
+                wakeupStatus: AudioPlayerStatus.Idle,
+                callback: () => resolveFct(option)
+            })
+        );
+    }
+
+    /**
+     * Try to play a audio stream, if the bot is connected
+     * @param audioStream readable audio stream
+     * @param option play audio option gathering various attribute (volume, ...)
+     * @return promise resolve when the audio is finish to play
+     */
+    playStream(audioStream: Readable, option?: PlayAudioOption): Promise<PlayAudioOption> {
+        if(this.currentConnection == undefined) {
+            this.discordApi.log(LogLevel.Error, 'Bot no connected to a voice channel');
+            return new Promise<PlayAudioOption>( resolveFct => resolveFct(option));
+        }
+
+        let resource = createAudioResource( audioStream, {inlineVolume: true} );
         if(option != undefined && option?.volume != undefined) {
             resource.volume.setVolume( option?.volume/100 );
         }

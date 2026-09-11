@@ -1,3 +1,4 @@
+import Readable from "stream";
 import { User } from "../user/user";
 import { MapName, MapNameId } from "../../tools/collection/map";
 import { Recycler } from "../../tools/collection/recycler";
@@ -102,4 +103,5 @@ export interface BotVoiceControlAPI {
      * @param volume volume in percent
      */
     playAudio: (audioFileName: string, option?: PlayAudioOption) => Promise<PlayAudioOption>
+    playStream: (audioStream: Readable, option?: PlayAudioOption) => Promise<PlayAudioOption>
 }
