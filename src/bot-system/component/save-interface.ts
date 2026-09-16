@@ -46,7 +46,7 @@ export class SaveInterface {
 
     /**
      * Check and Load data from json file
-     * @param defaultData default data in case of error
+     * @param defaultData default data in case of error, or version file error
      * @returns the data loaded
      */
     load<DataType extends {[key: string]: any}>(defaultData: DataType): DataType {
