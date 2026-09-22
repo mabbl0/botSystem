@@ -71,13 +71,13 @@ export class MethodManager extends UnitComponent {
      * @param mthName method name to found
      * @returns method found
      */
-    getMethod<FctPrototype>(componentName: string, componentType: ComponentType, ownerName: string, mthName: string): FctPrototype {
+    getMethod<FctPrototype>(componentName: string, componentType: ComponentType, ownerName: string, mthName: string): FctPrototype | undefined {
         let mthsComponent = this.mthMap.get(ownerName);
         if (!mthsComponent) {
             if (this.propBsState.value != BotSystemState.Start) {
                 this.logError(`Methods Component ask by ${componentName} not found: ${ownerName}.${mthName}`);
             }
-            return this.emptyFct as FctPrototype;
+            return undefined;
         }
 
         let mthFound = mthsComponent.mths.get(mthName);
@@ -85,23 +85,16 @@ export class MethodManager extends UnitComponent {
             if (this.propBsState.value != BotSystemState.Start) {
                 this.logError(`Method asked by ${componentName} not found: ${ownerName}.${mthName}`);
             }
-            return this.emptyFct as FctPrototype;
+            return undefined;
         }
 
         if (mthFound.option.onlyBsComponent && componentType != ComponentType.BotSystem) {
             this.logError(`Method ${ownerName}.${mthName} not authorized for ${componentName}`);
-            return this.emptyFct as FctPrototype;
+            return undefined;
         }
 
         this.logDebug(`method ${ownerName}.${mthName} ask by ${componentName}`);
         return mthFound.mth as FctPrototype;
-    }
-
-    // empty function to get something even in error case
-    private emptyFct(){
-        if(this && this.logError){
-            this.logError(`empty function call by ${this.name}`);
-        }
     }
 
 

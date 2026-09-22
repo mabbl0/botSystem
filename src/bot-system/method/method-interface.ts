@@ -65,7 +65,7 @@ export class MethodInterface {
      * @param mthName method name to found
      * @returns method found
      */
-    getMethod<FctPrototype>(componentName: string, mthName: string): FctPrototype | undefined{
+    getMethod<FctPrototype>(componentName: string, mthName: string): FctPrototype | undefined {
         if(this.#mthGetMethod){
             return this.#mthGetMethod<FctPrototype>(this.#componentName, this.#ptrType.value, componentName, mthName);
         }

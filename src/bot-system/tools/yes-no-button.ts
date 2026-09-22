@@ -8,14 +8,14 @@ export class YesNoButtons<TArgs> {
     /** the text question. 'are you sur?' by default */
     questionText: string | undefined
     /** the arguments for the callbacks */
-    args: TArgs | undefined
+    args?: TArgs
 
     /** Callback when the user answered yes */
-    yesCallback: undefined | ((interaction: Interaction, args?: TArgs) => void)
+    yesCallback?: ((interaction: Interaction, args?: TArgs) => void)
     /** Callback when the user answered no */
-    noCallback: undefined | ((interaction: Interaction, args?: TArgs) => void)
+    noCallback?: ((interaction: Interaction, args?: TArgs) => void)
     /** Callback if the user has not answered */
-    noAnswerCallback: undefined | ((args?: TArgs) => void)
+    noAnswerCallback?: ((args?: TArgs) => void)
 
     /** indicate how many time have the user to answer. 10 min by default. in ms */
     answerDelay: number
